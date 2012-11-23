@@ -3,12 +3,12 @@
 # The name of the verilog simulator
 CC=iverilog
 # List of executables built as part of this makefile
-TESTOBJS := memtest
+TESTOBJS := memtest a.vcd
 # List of individual tests that are run
 TESTS := memory-test
 # Directory test vectors are stored in. 
 VECTORDIR=../vectors/
-.SILENT:
+
 # macro to print out the name of the test being executed
 HEADER = echo "executing test '$@'"
 
@@ -24,7 +24,7 @@ memtest: memtest.v
 # executable actually prints the contents of the stimulus file
 memory-test: memtest
 	$(HEADER)
-	./$< +stimulus=$(VECTORDIR)test_vector
+	./$< +stimulus=$(VECTORDIR)test_vector +tracefile=a.vcd
 
 
 test: $(TESTS)
@@ -36,4 +36,3 @@ list:
 
 clean:
 	rm $(TESTOBJS)
-	echo deleted $(TESTOBJS)
