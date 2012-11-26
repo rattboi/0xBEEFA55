@@ -45,7 +45,7 @@ module test();
 	Clear = FALSE;
 
       // If it was, open the file
-      file = $fopenr(filename);
+      file = $fopen(filename, "r");
       count = 2;
       // While there are lines left to be read:
       while (count > 0) begin

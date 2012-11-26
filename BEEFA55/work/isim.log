@@ -1,0 +1,61 @@
+ISim log file
+Running: C:\0xBEEFA55\BEEFA55\work\test_isim_beh.exe -intstyle ise -gui -tclbatch isim.cmd -testplusarg stimulus=C:\0xBEEFA55\vectors\test_vector -wdb C:/0xBEEFA55/BEEFA55/work/test_isim_beh.wdb 
+ISim P.28xd (signature 0xa0883be4)
+WARNING: A WEBPACK license was found.
+WARNING: Please use Xilinx License Configuration Manager to check out a full ISim license.
+WARNING: ISim will run in Lite mode. Please refer to the ISim documentation for more information on the differences between the Lite and the Full version.
+This is a Lite version of ISim.
+Time resolution is 1 ps
+# onerror resume
+# wave add /
+# run 1000 ns
+Simulator is doing circuit initialization process.
+Finished circuit initialization process.
+command =  2 value = 00408ed4
+command =  0 value = 10019d94
+command =  2 value = 00408ed8
+command =  1 value = 10019d88
+command =  2 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc
+command =  0 value = 00408edc

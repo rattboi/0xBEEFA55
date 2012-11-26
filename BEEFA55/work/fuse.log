@@ -1,0 +1,17 @@
+Running: C:\Xilinx\14.2\ISE_DS\ISE\bin\nt64\unwrapped\fuse.exe -intstyle ise -incremental -lib unisims_ver -lib unimacro_ver -lib xilinxcorelib_ver -lib secureip -o C:/0xBEEFA55/BEEFA55/work/test_isim_beh.exe -prj C:/0xBEEFA55/BEEFA55/work/test_beh.prj work.test work.glbl 
+ISim P.28xd (signature 0xa0883be4)
+Number of CPUs detected in this system: 2
+Turning on mult-threading, number of parallel sub-compilation jobs: 4 
+Determining compilation order of HDL files
+Analyzing Verilog file "C:/0xBEEFA55/BEEFA55/work/../Source/memtest.v" into library work
+Analyzing Verilog file "C:/Xilinx/14.2/ISE_DS/ISE//verilog/src/glbl.v" into library work
+Starting static elaboration
+Completed static elaboration
+Compiling module test
+Compiling module glbl
+Time Resolution for simulation is 1ps.
+Waiting for 2 sub-compilation(s) to finish...
+Compiled 2 Verilog Units
+Built simulation executable C:/0xBEEFA55/BEEFA55/work/test_isim_beh.exe
+Fuse Memory Usage: 26464 KB
+Fuse CPU Usage: 702 ms
