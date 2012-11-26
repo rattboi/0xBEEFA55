@@ -15,16 +15,16 @@
 
 module INS_CACHE(
 	// INPUTS
-    input clk,
-    input [3:0] n,			// from trace file
-    input [31:0] add_in,	// from trace file
-    input [511:0] d_in,		// from next-level stub
+  input clk,
+  input [3:0] n,			// from trace file
+  input [31:0] add_in,	// from trace file
+  input [511:0] d_in,		// from next-level stub
 	
 	// OUTPUTS
 	output reg [31:0] add_out,	// to next-level cache
-    output reg hit,				// to statistics module
-    output reg miss				// to statistics module
-    );
+  output reg hit,				// to statistics module
+  output reg miss				// to statistics module
+  );
 	
 	// instruction cache only reponds to following values of n
 	parameter RESET = 4'd8;
@@ -33,8 +33,8 @@ module INS_CACHE(
 	
 	// instantiate cache
 	//	size			lines			ways
-	reg 		LRU 	[`LINES-1:0] 			;//  1=LRU is way 1.  0 = LRU way is 0
-	reg  		Valid	[`LINES-1:0] [`WAYS-1:0];
+	reg 				LRU 	[`LINES-1:0] 			;//  1=LRU is way 1.  0 = LRU way is 0
+	reg  				Valid	[`LINES-1:0] [`WAYS-1:0];
 	reg [23:0] 	Tag 	[`LINES-1:0] [`WAYS-1:0];
 	reg [511:0] Data	[`LINES-1:0] [`WAYS-1:0];
 	
