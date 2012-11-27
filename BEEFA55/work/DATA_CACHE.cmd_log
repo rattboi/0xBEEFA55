@@ -1,0 +1,3 @@
+vhdtdtfi -lib work C:/BEEFA55/DATA_CACHE.v -lang verilog -prj BEEFA55 -o DATA_CACHE.spl -module DATA_CACHE -template C:/Xilinx/14.2/ISE_DS/ISE//data/splveri.tft -deleteonerror 
+spl2sym -intstyle ise -family spartan6 DATA_CACHE.spl C:/BEEFA55/DATA_CACHE.sym 
+vhdtdtfi -lang verilog -prj BEEFA55 -o C:/BEEFA55/work/DATA_CACHE.tfi -lib work C:/BEEFA55//DATA_CACHE.v -module DATA_CACHE -template C:/Xilinx/14.2/ISE_DS/ISE//data/tfi.tft -deleteonerror 

@@ -1,0 +1,1 @@
+vhdtdtfi -lang verilog -prj BEEFA55 -o C:/BEEFA55/work/STATS.tfi -lib work C:/BEEFA55//STATS.v -module STATS -template C:/Xilinx/14.2/ISE_DS/ISE//data/tfi.tft -deleteonerror 
