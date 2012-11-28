@@ -161,3 +161,21 @@ pip-log.txt
 
 # Mac crap
 .DS_Store
+
+
+#xilinx
+ppc405_?
+implementation
+synthesis
+hdl
+report
+blkdiagram
+__xps
+*.log
+*.svf
+*.scr
+*.cmd
+*.bak
+*~
+*.elf
+*.ace
