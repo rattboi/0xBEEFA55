@@ -29,6 +29,7 @@ module INS_CACHE(
 	parameter RESET = 4'd8;
 	parameter INVALIDATE = 4'd3;
 	parameter INST_FETCH = 4'd2;
+	parameter PRINT	= 4'd4;
 	
 	// instantiate cache
 	//	size					lines			ways
@@ -124,6 +125,13 @@ module INS_CACHE(
 					end
 				
 			end
+			
+			PRINT:
+			begin
+				$display(" LINES | LRU | V1 |         WAY1         | V0 |         WAY0        ");
+				for (j = 0;	j < 1024*16; j = j+1)
+					if (Valid[j][0] | Valid[j][1])
+						$display("%5d | %d | %d | %24h  
 					
 			default:	// commands this module doesn't respond to
 			begin
