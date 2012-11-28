@@ -43,7 +43,6 @@ module PROJECT(
     .clk(clk), 
     .n(n), 
     .add_in(i_add), 
-    .d_in(l2_d_data), 
 	.add_out(l2_i_add),	
     .hit(i_hit), 
     .miss(i_miss)
