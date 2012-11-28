@@ -49,7 +49,7 @@ module INS_CACHE(
 	
 	wire [11:0] curr_tag = add_in[31:20];
 	wire [13:0] curr_index = add_in[19:6];
-	
+	 
 	always @*
 	begin	
 		add_out = 26'bZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ;
@@ -128,11 +128,13 @@ module INS_CACHE(
 			
 			PRINT:
 			begin
-				$display(" LINES | LRU | V1 |         WAY1         | V0 |         WAY0        ");
+				$display(" LINES | LRU | V[1] |         Tag[1]         | V[0] |         Tag[0]        ");
 				for (j = 0;	j < 1024*16; j = j+1)
 					if (Valid[j][0] | Valid[j][1])
-						$display("%5d | %d | %d | %24h  
-					
+						$display("%5d | %d | %d | 0x%24h | %d | 0x%24h", 
+							j, LRU[j], Valid[j][1], Tag[j][1], Valid[j][0], Tag[j][0]); 
+			end
+			
 			default:	// commands this module doesn't respond to
 			begin
 				done = 1'b0;
