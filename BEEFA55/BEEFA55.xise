@@ -214,7 +214,7 @@
     <property xil_pn:name="Other NETGEN Command Line Options" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Other Ngdbuild Command Line Options" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Other Place &amp; Route Command Line Options" xil_pn:value="" xil_pn:valueState="default"/>
-    <property xil_pn:name="Other Simulator Commands Behavioral" xil_pn:value="-testplusarg stimulus=C:\\0xBEEFA55\\vectors\\test_vector" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Other Simulator Commands Behavioral" xil_pn:value="-testplusarg stimulus=../../vectors/test_vector" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Other Simulator Commands Post-Map" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Other Simulator Commands Post-Route" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Other Simulator Commands Post-Translate" xil_pn:value="" xil_pn:valueState="default"/>
