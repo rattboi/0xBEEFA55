@@ -1,0 +1,30 @@
+Command line:
+   INS_CACHE_isim_beh.exe
+     -simmode  gui
+     -testplusarg  stimulus=C:\0xBEEFA55\vectors\test_vector
+     -simrunnum  0
+     -socket  49831
+
+Wed Nov 28 12:58:48 2012
+
+
+ Elaboration Time: 0.0312 sec
+
+ Current Memory Usage: 505.291 Meg
+
+ Total Signals          : 18
+ Total Nets             : 104
+ Total Signal Drivers   : 10
+ Total Blocks           : 2
+ Total Primitive Blocks : 2
+ Total Processes        : 12
+ Total Traceable Variables  : 30
+ Total Scalar Nets and Variables : 835879
+Total Line Count : 64
+
+ Total Simulation Time: 0.046801 sec
+
+ Current Memory Usage: 505.291 Meg
+
+Wed Nov 28 12:58:53 2012
+

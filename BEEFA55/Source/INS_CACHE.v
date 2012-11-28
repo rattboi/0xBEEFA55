@@ -10,20 +10,19 @@
 //
 //
 ////////////////////////////////////////////////////////////////////////////////
-`define LINES 8
+`define LINES 1024*16
 `define WAYS 2
 
 module INS_CACHE(
 	// INPUTS
-  input clk,
-  input [3:0] n,			// from trace file
-  input [31:0] add_in,	// from trace file
-  input [511:0] d_in,		// from next-level stub
+	input clk,
+	input [3:0] n,			// from trace file
+	input [25:0] add_in,	// from trace file
 	
 	// OUTPUTS
 	output reg [31:0] add_out,	// to next-level cache
-  output reg hit,				// to statistics module
-  output reg miss				// to statistics module
+	output reg hit,				// to statistics module
+	output reg miss				// to statistics module
   );
 	
 	// instruction cache only reponds to following values of n
@@ -32,11 +31,10 @@ module INS_CACHE(
 	parameter INST_FETCH = 4'd2;
 	
 	// instantiate cache
-	//	size			lines			ways
+	//	size					lines			ways
 	reg 				LRU 	[`LINES-1:0] 			;//  1=LRU is way 1.  0 = LRU way is 0
 	reg  				Valid	[`LINES-1:0] [`WAYS-1:0];
-	reg [23:0] 	Tag 	[`LINES-1:0] [`WAYS-1:0];
-	reg [511:0] Data	[`LINES-1:0] [`WAYS-1:0];
+	reg [23:0] 			Tag 	[`LINES-1:0] [`WAYS-1:0];
 	
 	// bit/byte selection
 	// Data[2][1] = 512 bit array from line 2, way 1
@@ -53,76 +51,78 @@ module INS_CACHE(
 	
 	always @*
 	begin	
-		add_out = 32'bZZZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ;
+		add_out = 26'bZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ;
+		done	= 1'b0;
+		hit 	= 1'b0;
+		miss 	= 1'b0;
+				
 		case(n)
 			RESET:	// clear all bits in cache
 			begin
-				done = 1'b0;
-				hit = 1'b0;
-				miss = 1'b0;
-				
-				for (i = 0; i < `LINES; i = i+1'b1) 	// for every line
+				for (i = 0; i < 8; i = i+1'b1) 	// for every line
 				begin
 					LRU[i] = 1'b0;	
-					for (j = 0; j < `WAYS; j = i+1'b1)	// for all ways
+					for (j = 0; j < 2; j = j+1'b1)	// for all ways
 					begin
 						Valid	[i][j]	= 1'b0;	
 						Tag  	[i][j]	= 24'b0;
-						Data 	[i][j]	= 512'b0;
 					end
 				end
 			end
 			
 			INVALIDATE:
 			begin
-				done = 1'b0;
-				hit  = 1'b0;
-				miss = 1'b0;
-				
-				for (j = 0; j < `WAYS; j = i+1'b1)			// for all ways
+				for (j = 0; j < `WAYS; j = j+1'b1)			// for all ways
 					if (Tag[curr_index][i] == curr_tag)
 						Valid[curr_index][i] = 1'b0;
 			end	
 			
 			INST_FETCH:
 			begin
-				done = 1'b0;
-				hit = 1'b0;
-				miss = 1'b0;
-				
-				// hit condition(s) (one for each way)
-				// LRU Values:  1=LRU is way 1.  0 = LRU way is 0
-				if (Tag[curr_index][0] == curr_tag && Valid[curr_index][0] == 1'b1)
-					{hit, LRU[curr_index]} = {1'b1, 1'b1};
-				
-				else if (Tag[curr_index][1] == curr_tag && Valid[curr_index][1] == 1'b1)
-					{hit, LRU[curr_index]} = {1'b1, 1'b0};	
-				
-				else
+				//	look at all (both) ways.  if for either, the tags match
+				//	and the valid bit is set, this is a hit.  on a hit, the 
+				//  if(!done) will evaluate false and execution drops through.
+				for (j = 0; j < 2; j = j+1'b1)
 				begin
-					miss = 1'b1;
-					
-					for (j = 0; j < `WAYS; j = i+1'b1)  // if one way is empty (invalid) put data there
-					begin
-						if (!done)
-							if (Valid[curr_index][j] == 1'b0)
-							begin
-								done = 1'b1;
-								add_out = add_in;
-								Tag[curr_index][j] = curr_tag;  
-								Data[curr_index][j] = d_in;     
-								Valid[curr_index][j] = 1'b1;
-							end
-					end
-					
-					if (!done) // both ways were full... LRU gets the data
-					begin
-						add_out = add_in;
-						Tag[curr_index][LRU[curr_index]] = curr_tag;  
-						Data[curr_index][LRU[curr_index]] = d_in;     
-						// Valid[curr_index][LRU] == 1'b1;   
-					end
+					if (!done)
+						if (Tag[curr_index][j] == curr_tag && Valid[curr_index][j] == 1'b1)
+						begin
+							LRU[curr_index] 	= j[0]; // is this logic right?
+							done 				= 1'b1;
+							hit 				= 1'b1;
+						end
+					else ;
 				end
+				
+				//	if execution exits this loop and done still == 0, then 
+				// 	the ins. fetch was not a hit.  so assert miss.		
+				if	(!done)	
+					miss = 1'b1;	
+				
+				// look at both ways.  If either is empty (valid == 0) then 
+				// do a read and and put it in the empty way.  If this happens,
+				// done is set true, and execution will drop out of the loop.
+				for (j = 0; j < 2; j = j+1'b1)
+				begin
+					if (!done)
+						if (Valid[curr_index][j] == 1'b0)
+						begin
+							done 				= 1'b1;
+							add_out				= add_in[25:0]; // is this right?
+							Tag[curr_index][j] 	= curr_tag;
+							Valid[curr_index][j]= 1'b1;
+						end
+				end
+							
+				// reaching this point means an eviction is needed
+				// so evict the LRU
+				if (!done)
+					begin
+						add_out	= add_in[25:0]; // is this right?
+						Tag[curr_index][LRU[curr_index]] = curr_tag;  
+						Valid[curr_index][LRU[curr_index]] = 1'b1;   
+					end
+				
 			end
 					
 			default:	// commands this module doesn't respond to
