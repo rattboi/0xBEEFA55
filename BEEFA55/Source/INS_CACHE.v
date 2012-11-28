@@ -12,15 +12,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 `define LINES 1024*16
 `define WAYS 2
+`define LINEBITS 14
+`define	TAGBITS 24
 
 module INS_CACHE(
 	// INPUTS
 	input clk,
 	input [3:0] n,			// from trace file
-	input [25:0] add_in,	// from trace file
+	input [31:0] add_in,	// from trace file
 	
 	// OUTPUTS
-	output reg [31:0] add_out,	// to next-level cache
+	output reg [25:0] add_out,	// to next-level cache
 	output reg hit,				// to statistics module
 	output reg miss				// to statistics module
   );
@@ -29,7 +31,7 @@ module INS_CACHE(
 	parameter RESET = 4'd8;
 	parameter INVALIDATE = 4'd3;
 	parameter INST_FETCH = 4'd2;
-	parameter PRINT	= 4'd4;
+	parameter PRINT	= 4'd9;
 	
 	// instantiate cache
 	//	size					lines			ways
@@ -43,7 +45,7 @@ module INS_CACHE(
 	
 	// loop counters
 	integer i,j;
-	
+	 
 	// internal signals
 	reg done = 1'b0;
 	
@@ -60,7 +62,7 @@ module INS_CACHE(
 		case(n)
 			RESET:	// clear all bits in cache
 			begin
-				for (i = 0; i < 8; i = i+1'b1) 	// for every line
+				for (i = 0; i < `LINES; i = i+1'b1) 	// for every line
 				begin
 					LRU[i] = 1'b0;	
 					for (j = 0; j < 2; j = j+1'b1)	// for all ways
@@ -83,7 +85,7 @@ module INS_CACHE(
 				//	look at all (both) ways.  if for either, the tags match
 				//	and the valid bit is set, this is a hit.  on a hit, the 
 				//  if(!done) will evaluate false and execution drops through.
-				for (j = 0; j < 2; j = j+1'b1)
+				for (j = 0; j < `WAYS; j = j+1'b1)
 				begin
 					if (!done)
 						if (Tag[curr_index][j] == curr_tag && Valid[curr_index][j] == 1'b1)
@@ -103,7 +105,7 @@ module INS_CACHE(
 				// look at both ways.  If either is empty (valid == 0) then 
 				// do a read and and put it in the empty way.  If this happens,
 				// done is set true, and execution will drop out of the loop.
-				for (j = 0; j < 2; j = j+1'b1)
+				for (j = 0; j < `WAYS; j = j+1'b1)
 				begin
 					if (!done)
 						if (Valid[curr_index][j] == 1'b0)
@@ -114,7 +116,7 @@ module INS_CACHE(
 							Valid[curr_index][j]= 1'b1;
 						end
 				end
-							
+				
 				// reaching this point means an eviction is needed
 				// so evict the LRU
 				if (!done)
@@ -128,11 +130,19 @@ module INS_CACHE(
 			
 			PRINT:
 			begin
-				$display(" LINES | LRU | V[1] |         Tag[1]         | V[0] |         Tag[0]        ");
-				for (j = 0;	j < 1024*16; j = j+1)
+				$display("------- INSTRUCTION CACHE CONTENTS -------");
+				$display(" LINE  | LRU | V[1]| Tag[1] | V[0]| Tag[0]");
+				for (j = 0;	j < `LINES; j = j+1)
 					if (Valid[j][0] | Valid[j][1])
-						$display("%5d | %d | %d | 0x%24h | %d | 0x%24h", 
-							j, LRU[j], Valid[j][1], Tag[j][1], Valid[j][0], Tag[j][0]); 
+						$display(" %4h  |  %d  |  %d  | %6h |  %d  | %6h", 
+							j[`LINEBITS-1:0], 
+							LRU[j], 
+							Valid[j][1], 
+							Valid[j][1] ? Tag[j][1] : `TAGBITS'hX, 
+							Valid[j][0], 
+							Valid[j][0] ? Tag[j][0] : `TAGBITS'hX
+						); 
+				$display("--- END OF INSTRUCTION CACHE CONTENTS ----");
 			end
 			
 			default:	// commands this module doesn't respond to
