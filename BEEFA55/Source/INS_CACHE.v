@@ -107,8 +107,9 @@ module INS_CACHE(
 				end
 				
 				//	if execution exits this loop and done still == 0, then 
-				// 	the ins. fetch was not a hit.  so increase miss.		
-				miss = miss + 1'b1;
+				// 	the ins. fetch was not a hit.  so increase miss.	
+				if (!done)
+					miss = miss + 1'b1;
 				
 				// look at both ways.  If either is empty (valid == 0) then 
 				// do a read and and put it in the empty way.  If this happens,
