@@ -10,18 +10,21 @@
 //
 //
 ////////////////////////////////////////////////////////////////////////////////
-module DATA_CACHE(
+`define LINES 1024*16
+`define WAYS 2
+`define LINEBITS 14
+`define	TAGBITS 24
+
+module INS_CACHE(
 	// INPUTS
-    input clk,
-    input [3:0] n,			// from trace file
-    input [31:0] add_in,	// from trace file
-    input [511:0] d_in,		// from next-level stub
+	input [3:0] n,			// from trace file
+	input [31:0] add_in,	// from trace file
 	
 	// OUTPUTS
-	output [31:0] add_out,	// to next-level cache
-    output hit,				// to statistics module
-    output miss				// to statistics module
-    );
-
+	output reg [25:0] add_out,	// to next-level cache
+	output reg [31:0] hit,		// to statistics module
+	output reg [31:0] miss,		// to statistics module
+	output reg [31:0] reads
+  );
 
 endmodule

@@ -7,8 +7,6 @@
 // Authors: 
 // Description:
 //
-//
-//
 ////////////////////////////////////////////////////////////////////////////////
 `define LINES 1024*16
 `define WAYS 2
@@ -17,7 +15,6 @@
 
 module INS_CACHE(
 	// INPUTS
-	input clk,
 	input [3:0] n,			// from trace file
 	input [31:0] add_in,	// from trace file
 	
@@ -29,10 +26,10 @@ module INS_CACHE(
   );
 	
 	// instruction cache only reponds to following values of n
-	parameter RESET = 4'd8;
-	parameter INVALIDATE = 4'd3;
-	parameter INST_FETCH = 4'd2;
-	parameter PRINT	= 4'd9;
+	parameter RESET 	 	= 4'd8;
+	parameter INVALIDATE 	= 4'd3;
+	parameter INST_FETCH 	= 4'd2;
+	parameter PRINT			= 4'd9;
 	
 	// instantiate cache elements
 	//	size					lines			ways
