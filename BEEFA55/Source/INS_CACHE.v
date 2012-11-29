@@ -123,7 +123,7 @@ module INS_CACHE(
 							add_out				= add_in[31:6]; // is this right?
 							Tag[curr_index][j] 	= curr_tag;
 							Valid[curr_index][j]= 1'b1;
-							
+							LRU[curr_index] 	= ~j[0]; 
 						end
 				end
 				
@@ -133,7 +133,8 @@ module INS_CACHE(
 					begin
 						add_out	= add_in[31:6]; // is this right?
 						Tag[curr_index][LRU[curr_index]] = curr_tag;  
-						Valid[curr_index][LRU[curr_index]] = 1'b1;   
+						Valid[curr_index][LRU[curr_index]] = 1'b1; 
+						LRU[curr_index] 	= ~LRU[curr_index]; 
 					end
 				
 			end
