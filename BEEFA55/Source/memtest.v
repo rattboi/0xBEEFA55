@@ -17,8 +17,19 @@ module test();
    reg [31:0] value;
    reg [9000:0] filename;
    reg [9000:0] tracefile;
+   wire [25:0] 	add_out;
    integer count;
 
+   PROJECT project(
+		   .clk(Clock),
+		   .clear(Clear),
+		   .n(command),
+		   .add_in(value),
+		   .done(1'b0),
+		   .add_out(add_out)
+		   );
+		   
+   
    initial
      begin
 	Clock = FALSE;
@@ -54,11 +65,12 @@ module test();
 	 if(count > 0) begin
 	   // Display each line
 	    repeat(1) @(negedge Clock);
-	    $display("command = %d value = %x", command, value);
+//	    $display("command = %d value = %x", command, value);
 	 end
       end
       // Close the file, and finish up
       $fclose(file);
+		$stop;
       $finish;
    end
 endmodule
