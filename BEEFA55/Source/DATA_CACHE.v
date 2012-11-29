@@ -19,6 +19,7 @@ module DATA_CACHE(
 	// INPUTS
 	input [3:0] n,			// from trace file
 	input [31:0] add_in,	// from trace file
+	input clk,
 	
 	// OUTPUTS
 	output reg [25:0] add_out,	// to next-level cache
@@ -168,7 +169,32 @@ module DATA_CACHE(
 						LRU[curr_index] 			= new_lru;
 						add_out						= add_in[31:6]; 							
 					end
+					
+			PRINT:
+			begin
+			//	$display("--- END OF INSTRUCTION CACHE CONTENTS ----");
+				$display("----------- DATA CACHE CONTENTS ----------");
+				$display(" INDEX | LRU | V[3]| Tag[3] | V[2]| Tag[2]| V[1]| Tag[1] | V[0]| Tag[0]");
+				for (j = 0;	j < `LINES; j = j+1)
+					if (Valid[j][0] | Valid[j][1])
+						$display(" %4h  |  %d  |  %d  | %6h |  %d  | %6h |  %d  | %6h |  %d  | %6h", 
+							j[`LINEBITS-1:0], 
+							lru_way, 
+							Valid[j][3], 
+							Valid[j][3] ? Tag[j][3] : `TAGBITS'hX, 
+							Valid[j][2], 
+							Valid[j][2] ? Tag[j][2] : `TAGBITS'hX
+							Valid[j][1], 
+							Valid[j][1] ? Tag[j][1] : `TAGBITS'hX, 
+							Valid[j][0], 
+							Valid[j][0] ? Tag[j][0] : `TAGBITS'hX							
+						); 
+				$display("--- END OF INSTRUCTION CACHE CONTENTS ----");
 			end
+			
+			default: ;	// commands this module doesn't respond to
+		endcase		
+	end
 				
 LRU_BITS LRU_CALC (
     .LRU_in(LRU[curr_index]), 
