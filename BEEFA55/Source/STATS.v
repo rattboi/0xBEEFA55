@@ -28,6 +28,6 @@ module STATS(
 		$display(" Miss = %d", data_miss + ins_miss);
 		$display(" Reads = %d", data_reads + ins_reads);
 		$display(" Writes = %d", data_writes);
-		$display(" Hit Ratio = %f", (data_hit + ins_hit)/(data_reads + ins_reads + data_writes));
+		$display(" Hit Ratio = %.1f%%", 100.0*(data_hit + ins_hit)/(data_reads + ins_reads + data_writes));
 	end	
 endmodule
