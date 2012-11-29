@@ -123,6 +123,7 @@ module DATA_CACHE(
 				end
 				
 				if (!done)
+					
 					begin
 						lru_calc_in					= LRU[curr_index];
 						add_out						= add_in[31:6]; 

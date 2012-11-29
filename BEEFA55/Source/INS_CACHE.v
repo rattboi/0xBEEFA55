@@ -153,7 +153,7 @@ module INS_CACHE(
 							Valid[j][0], 
 							Valid[j][0] ? Tag[j][0] : `TAGBITS'hX
 						); 
-				$display("--- END OF INSTRUCTION CACHE CONTENTS ----");
+				$display("--- END OF INSTRUCTION CACHE CONTENTS ----\n");
 			end
 			
 			default: ;	// commands this module doesn't respond to
