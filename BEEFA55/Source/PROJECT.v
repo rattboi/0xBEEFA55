@@ -41,7 +41,7 @@ module PROJECT(input clk,
 	// do file input and stream to caches
 
 	INS_CACHE Instruction (
-    .clk(clk), 
+    //.clk(clk), 
     .n(n), 
     .add_in(add_in), 
     .add_out(add_out),	
