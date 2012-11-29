@@ -57,13 +57,9 @@ initial begin
       // While there are lines left to be read:
       while (count > 1) begin
 	 // Parse the line
+	 #CLOCK_WIDTH Clock = 0;
 	 count = $fscanf(file, "%d %x", command, value);
-	 if(count > 1) begin
-	   // Display each line
-		 #CLOCK_WIDTH Clock = ~Clock;
-		 #CLOCK_WIDTH Clock = ~Clock;
-	    //$display("command = %d value = %x", command, value);
-	 end
+	 #CLOCK_WIDTH Clock = 1;
       end
 		
       // Close the file, and finish up
