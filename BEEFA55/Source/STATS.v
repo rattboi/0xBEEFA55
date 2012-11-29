@@ -7,21 +7,27 @@
 // Authors: 
 // Description:
 //
-//
-//
 ////////////////////////////////////////////////////////////////////////////////
 module STATS(
 	// INPUTS
-	input clk,				// clock may not be needed in this module
-    input [3:0] n,			// mux to determine reads/writes
-	input i_hit,       		// 
-    input i_miss,        	// 
-	input d_hit,       		// 
-    input d_miss        	// 	
+    input print,			// mux to determine reads/writes
+    input [31:0] ins_reads,
+	input [31:0] ins_hit,
+	input [31:0] ins_miss,
 	
-	// OUTPUTS 
-	// none, will probably just use $display()
+	input [31:0] data_reads,
+	input [31:0] data_writes,
+	input [31:0] data_hit,
+	input [31:0] data_miss
     );
-
-
+	
+	always @(posedge print)
+	begin
+		$display(" STATISTICS: ");
+		$display(" Hits = %d", data_hit + ins_hit);
+		$display(" Miss = %d", data_miss + ins_miss);
+		$display(" Reads = %d", data_reads + ins_reads);
+		$display(" Writes = %d", data_writes);
+		$display(" Hit Ratio = %d", (data_hit + ins_hit)/(data_reads + ins_reads + data_writes));
+	end	
 endmodule

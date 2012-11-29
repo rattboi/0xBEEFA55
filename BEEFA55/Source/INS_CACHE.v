@@ -23,8 +23,9 @@ module INS_CACHE(
 	
 	// OUTPUTS
 	output reg [25:0] add_out,	// to next-level cache
-	output reg hit,				// to statistics module
-	output reg miss				// to statistics module
+	output reg [31:0] hit,		// to statistics module
+	output reg [31:0] miss,		// to statistics module
+	output reg [31:0] reads
   );
 	
 	// instruction cache only reponds to following values of n
@@ -33,35 +34,34 @@ module INS_CACHE(
 	parameter INST_FETCH = 4'd2;
 	parameter PRINT	= 4'd9;
 	
-	// instantiate cache
+	// instantiate cache elements
 	//	size					lines			ways
 	reg 				LRU 	[`LINES-1:0] 			;//  1=LRU is way 1.  0 = LRU way is 0
 	reg  				Valid	[`LINES-1:0] [`WAYS-1:0];
 	reg [23:0] 			Tag 	[`LINES-1:0] [`WAYS-1:0];
 	
-	// bit/byte selection
-	// Data[2][1] = 512 bit array from line 2, way 1
-	// Data[2][1][43] 43rd bit from above data array
-	
 	// loop counters
 	integer i,j;
 	 
-	// internal signals
+	// internal
 	reg done = 1'b0;
 	
+	// assignments
 	wire [11:0] curr_tag = add_in[31:20];
 	wire [13:0] curr_index = add_in[19:6];
 	 
 	always @*
 	begin	
-		add_out = 26'bZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ_ZZZZ;
+		add_out = 26'bZ;
 		done	= 1'b0;
-		hit 	= 1'b0;
-		miss 	= 1'b0;
 				
 		case(n)
 			RESET:	// clear all bits in cache
 			begin
+				hit 	= 32'b0;
+				miss 	= 32'b0;
+				reads	= 32'b0;
+				
 				for (i = 0; i < `LINES; i = i+1'b1) 	// for every line
 				begin
 					LRU[i] = 1'b0;	
@@ -75,13 +75,19 @@ module INS_CACHE(
 			
 			INVALIDATE:
 			begin
-				for (j = 0; j < `WAYS; j = j+1'b1)			// for all ways
-					if (Tag[curr_index][i] == curr_tag)
-						Valid[curr_index][i] = 1'b0;
+				for (j = 0; j < `WAYS; j = j+1'b1)
+					if (!done)
+						if (Tag[curr_index][i] == curr_tag)
+						begin
+							done = 1'b1;
+							Valid[curr_index][i] = 1'b0;
+						end
 			end	
 			
 			INST_FETCH:
 			begin
+				reads = reads + 1'b1;
+				
 				//	look at all (both) ways.  if for either, the tags match
 				//	and the valid bit is set, this is a hit.  on a hit, the 
 				//  if(!done) will evaluate false and execution drops through.
@@ -92,15 +98,14 @@ module INS_CACHE(
 						begin
 							LRU[curr_index] 	= j[0]; // is this logic right?
 							done 				= 1'b1;
-							hit 				= 1'b1;
+							hit 				= hit + 1'b1;
 						end
 					else ;
 				end
 				
 				//	if execution exits this loop and done still == 0, then 
-				// 	the ins. fetch was not a hit.  so assert miss.		
-				if	(!done)	
-					miss = 1'b1;	
+				// 	the ins. fetch was not a hit.  so increase miss.		
+				miss = miss + 1'b1;
 				
 				// look at both ways.  If either is empty (valid == 0) then 
 				// do a read and and put it in the empty way.  If this happens,
@@ -145,12 +150,7 @@ module INS_CACHE(
 				$display("--- END OF INSTRUCTION CACHE CONTENTS ----");
 			end
 			
-			default:	// commands this module doesn't respond to
-			begin
-				done = 1'b0;
-				hit = 1'b0;
-				miss = 1'b0;
-			end
+			default: ;	// commands this module doesn't respond to
 		endcase
 	end		
 	
