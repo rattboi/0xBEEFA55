@@ -43,7 +43,7 @@ module DATA_CACHE(
 	reg [23:0] 			Tag 	[`LINES-1:0] [`WAYS-1:0];
 	
 	// loop counters
-	integer i,j;
+	integer line_cnt,way_cnt;
 	 
 	// internal
 	reg done = 1'b0;
@@ -68,35 +68,35 @@ module DATA_CACHE(
 				miss 	= 32'b0;
 				reads	= 32'b0;
 				writes = 32'b0;
-				for (i = 0; i < `LINES; i = i+1'b1) 	// for every line
+				for (line_cnt = 0; line_cnt < `LINES; line_cnt = line_cnt + 1'b1) 	// for every line
 				begin
-					LRU[i] = 6'b0;	
-					for (j = 0; j < `WAYS; j = j+1'b1)	// for all ways
+					LRU[line_cnt] = 6'b0;	
+					for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)	// for all ways
 					begin
-						Valid	[i][j]	= 1'b0;	
-						Tag  	[i][j]	= 24'b0;
+						Valid	[line_cnt][way_cnt]	= 1'b0;	
+						Tag  	[line_cnt][way_cnt]	= 24'b0;
 					end
 				end
 			end
 			
 			INVALIDATE:
 			begin
-				for (j = 0; j < `WAYS; j = j+1'b1)
+				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
 					if (!done)
-						if (Tag[curr_index][j] == curr_tag)
+						if (Tag[curr_index][way_cnt] == curr_tag)
 						begin
 							done = 1'b1;
-							Valid[curr_index][j] = 1'b0;
+							Valid[curr_index][way_cnt] = 1'b0;
 						end
 			end	
 			
 			READ:
 			begin
 				reads = reads + 1'b1;
-				for (j = 0; j < `WAYS; j = j+1'b1)
+				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
 				begin
 					if (!done)
-						if (Tag[curr_index][j] == curr_tag && Valid[curr_index][j] == 1'b1)
+						if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == 1'b1)
 						begin
 							lru_calc_in			= LRU[curr_index];					
 							LRU[curr_index] 	= new_lru; // is this logic right? (Yes, I think it is, NOW --rattboi)
@@ -108,16 +108,16 @@ module DATA_CACHE(
 				if (!done)
 					miss = miss + 1'b1;
 				
-				for (j = 0; j < `WAYS; j = j+1'b1)
+				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
 				begin
 					if (!done)
-						if (Valid[curr_index][j] == 1'b0)
+						if (Valid[curr_index][way_cnt] == 1'b0)
 						begin
 							lru_calc_in				= LRU[curr_index];
 							done 					= 1'b1;
 							add_out					= add_in[31:6]; 
-							Tag[curr_index][j] 		= curr_tag;
-							Valid[curr_index][j]	= 1'b1;
+							Tag[curr_index][way_cnt] 		= curr_tag;
+							Valid[curr_index][way_cnt]	= 1'b1;
 							LRU[curr_index] 		= new_lru;
 						end
 				end
@@ -137,10 +137,10 @@ module DATA_CACHE(
 			begin
 				writes = writes + 1;
 				
-				for (j = 0; j < `WAYS; j = j+1'b1)
+				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
 				begin
 					if (!done)
-						if (Tag[curr_index][j] == curr_tag && Valid[curr_index][j] == 1'b1)
+						if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == 1'b1)
 						begin
 							lru_calc_in				= LRU[curr_index];					
 							add_out					= add_in[31:6]; 
@@ -153,16 +153,16 @@ module DATA_CACHE(
 				if (!done)
 					miss = miss + 1'b1;
 				
-				for (j = 0; j < `WAYS; j = j+1'b1)
+				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
 				begin
 					if (!done)
-						if (Valid[curr_index][j] == 1'b0)
+						if (Valid[curr_index][way_cnt] == 1'b0)
 						begin
 							lru_calc_in				= LRU[curr_index];
 							done 					= 1'b1;
 							add_out					= add_in[31:6]; 
-							Tag[curr_index][j] 		= curr_tag;
-							Valid[curr_index][j]	= 1'b1;
+							Tag[curr_index][way_cnt] 		= curr_tag;
+							Valid[curr_index][way_cnt]	= 1'b1;
 							LRU[curr_index] 		= new_lru;
 							add_out					= add_in[31:6]; 							
 						end
@@ -183,22 +183,22 @@ module DATA_CACHE(
 			begin
 				$display("----------- DATA CACHE CONTENTS ----------");
 				$display(" INDEX | LRU | V[3]| Tag[3] | V[2]| Tag[2]| V[1]| Tag[1] | V[0]| Tag[0]");
-				for (j = 0;	j < `LINES; j = j+1)
+				for (way_cnt = 0;	way_cnt < `LINES; way_cnt = way_cnt+1)
 				begin
-					if (Valid[j][3] | Valid[j][2] | Valid[j][1] | Valid[j][0] )
+					if (Valid[way_cnt][3] | Valid[way_cnt][2] | Valid[way_cnt][1] | Valid[way_cnt][0] )
 					begin
-						lru_calc_in	= LRU[j];
+						lru_calc_in	= LRU[way_cnt];
 						$display(" %4h  |  %d  |  %d  | %6h |  %d  | %6h |  %d  | %6h |  %d  | %6h", 
-							j[`LINEBITS-1:0], 
+							way_cnt[`LINEBITS-1:0], 
 							lru_way, 
-							Valid[j][3], 
-							Valid[j][3] ? Tag[j][3] : `TAGBITS'hX, 
-							Valid[j][2], 
-							Valid[j][2] ? Tag[j][2] : `TAGBITS'hX,
-							Valid[j][1], 
-							Valid[j][1] ? Tag[j][1] : `TAGBITS'hX, 
-							Valid[j][0], 
-							Valid[j][0] ? Tag[j][0] : `TAGBITS'hX							
+							Valid[way_cnt][3], 
+							Valid[way_cnt][3] ? Tag[way_cnt][3] : `TAGBITS'hX, 
+							Valid[way_cnt][2], 
+							Valid[way_cnt][2] ? Tag[way_cnt][2] : `TAGBITS'hX,
+							Valid[way_cnt][1], 
+							Valid[way_cnt][1] ? Tag[way_cnt][1] : `TAGBITS'hX, 
+							Valid[way_cnt][0], 
+							Valid[way_cnt][0] ? Tag[way_cnt][0] : `TAGBITS'hX							
 						); 
 					end
 				
@@ -212,12 +212,12 @@ module DATA_CACHE(
 				
 LRU_BITS LRU_CALC (
     .LRU_in(lru_calc_in), 
-    .Way(j[1:0]), 
+    .Way(way_cnt[1:0]), 
+    .LRU_in(LRU[curr_index]), 
+    .Way(way_cnt[1:0]), 
     .LRU(lru_way), 
     .LRU_out(new_lru)
     );
 
-
-				
 endmodule
 
