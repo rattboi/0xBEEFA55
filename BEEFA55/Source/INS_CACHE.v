@@ -46,18 +46,12 @@ module INS_CACHE(
 	// assignments
 	wire [11:0] curr_tag = add_in[31:20];
 	wire [13:0] curr_index = add_in[19:6];
-	
-	initial begin
-		hit = 0;
-		miss = 0;
-		reads = 0;
-	end
-	
+	 
 	always @*
 	begin	
 		add_out = 26'bZ;
 		done	= 1'b0;
-		
+				
 		case(n)
 			RESET:	// clear all bits in cache
 			begin
@@ -68,7 +62,7 @@ module INS_CACHE(
 				for (i = 0; i < `LINES; i = i+1'b1) 	// for every line
 				begin
 					LRU[i] = 1'b0;	
-					for (j = 0; j < 2; j = j+1'b1)	// for all ways
+					for (j = 0; j < `WAYS; j = j+1'b1)	// for all ways
 					begin
 						Valid	[i][j]	= 1'b0;	
 						Tag  	[i][j]	= 24'b0;

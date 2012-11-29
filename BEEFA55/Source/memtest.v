@@ -12,7 +12,7 @@ module test();
    reg Clock;
    reg Clear;
    integer file;		// the file handle 
-   
+   reg done;
    reg [3:0] command;
    reg [31:0] value;
    reg [9000:0] filename;
@@ -25,7 +25,7 @@ module test();
 		   .clear(Clear),
 		   .n(command),
 		   .add_in(value),
-		   .done(1'b0),
+		   .done(done),
 		   .add_out(add_out)
 		   );
 		   
@@ -33,12 +33,11 @@ module test();
    initial
      begin
 	Clock = FALSE;
-	forever #CLOCK_WIDTH Clock = ~Clock;
+	done = 1'b0;
+	//forever #CLOCK_WIDTH Clock = ~Clock;
      end
 
-   
-   initial begin
-
+initial begin
       // If a tracefile has been specified, generate a vcd file
       if($value$plusargs("tracefile=%s", tracefile)) begin
 	 $dumpfile(tracefile);
@@ -51,26 +50,25 @@ module test();
          $finish;
       end
 
-	Clear = TRUE;
-	repeat (IDLE_CLOCKS) @(negedge Clock);
-	Clear = FALSE;
 
       // If it was, open the file
       file = $fopen(filename, "r");
       count = 2;
       // While there are lines left to be read:
-      while (count > 0) begin
+      while (count > 1) begin
 	 // Parse the line
 	 count = $fscanf(file, "%d %x", command, value);
-	 if(count > 0) begin
+	 if(count > 1) begin
 	   // Display each line
-	    repeat(1) @(negedge Clock);
-//	    $display("command = %d value = %x", command, value);
+		 #CLOCK_WIDTH Clock = ~Clock;
+		 #CLOCK_WIDTH Clock = ~Clock;
+	    //$display("command = %d value = %x", command, value);
 	 end
       end
+		
       // Close the file, and finish up
       $fclose(file);
-		$stop;
-      $finish;
+		done = 1'b1;
+     // $finish;
    end
 endmodule
