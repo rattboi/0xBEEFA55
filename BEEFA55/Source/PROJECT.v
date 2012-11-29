@@ -35,8 +35,8 @@ module PROJECT(input clk,
 	wire [31:0] i_miss;
 	wire [31:0]	d_miss;
 	wire [31:0] i_reads;
-
-
+	wire [31:0] d_reads;
+	wire [31:0] d_writes;
 
 	// do file input and stream to caches
 
@@ -50,5 +50,18 @@ module PROJECT(input clk,
     .reads(i_reads)
     );
 	
+STATS stats(
+	// INPUTS
+    .print(done),			// mux to determine reads/writes
+   .ins_reads(i_reads),
+	.ins_hit(i_hit),
+	.ins_miss(i_miss),
+	
+	.data_reads(0),
+	.data_writes(0),
+	.data_hit(0),
+	.data_miss(0)
+    );
+
 
 endmodule
