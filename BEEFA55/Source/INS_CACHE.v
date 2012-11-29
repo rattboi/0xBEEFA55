@@ -123,6 +123,7 @@ module INS_CACHE(
 							add_out				= add_in[31:6]; // is this right?
 							Tag[curr_index][j] 	= curr_tag;
 							Valid[curr_index][j]= 1'b1;
+							
 						end
 				end
 				
