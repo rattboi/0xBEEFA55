@@ -15,7 +15,7 @@
 `define LINEBITS 14
 `define	TAGBITS 24
 
-module INS_CACHE(
+module DATA_CACHE(
 	// INPUTS
 	input [3:0] n,			// from trace file
 	input [31:0] add_in,	// from trace file
