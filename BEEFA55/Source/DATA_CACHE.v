@@ -67,7 +67,7 @@ module DATA_CACHE(
 				hit 	= 32'b0;
 				miss 	= 32'b0;
 				reads	= 32'b0;
-				
+				writes = 32'b0;
 				for (i = 0; i < `LINES; i = i+1'b1) 	// for every line
 				begin
 					LRU[i] = 6'b0;	
@@ -200,8 +200,9 @@ module DATA_CACHE(
 							Valid[j][0] ? Tag[j][0] : `TAGBITS'hX							
 						); 
 					end
-				$display("------- END OF DATA CACHE CONTENTS -------");
+				
 				end
+				$display("------- END OF DATA CACHE CONTENTS -------");
 			end
 			
 			default: ;	// commands this module doesn't respond to

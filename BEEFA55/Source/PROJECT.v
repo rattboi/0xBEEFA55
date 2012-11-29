@@ -39,7 +39,7 @@ module PROJECT(
 	// signals for n
 	reg iclk, dclk;
 	
-	always @(posedge clk)
+	always @(posedge clk or negedge clk)
 	begin
 		iclk = clk;
 		dclk = clk;
@@ -48,7 +48,7 @@ module PROJECT(
 	
 	// do file input and stream to caches
 
-	INS_CACHE Instruction (
+	INS_CACHE i_cache (
     .clk(iclk), 
     .n(n), 
     .add_in(add_in), 
@@ -60,18 +60,18 @@ module PROJECT(
 	
 STATS stats(
 	// INPUTS
-    .print(done | ns),			// mux to determine reads/writes
+    .print(done),			// mux to determine reads/writes
    .ins_reads(i_reads),
 	.ins_hit(i_hit),
 	.ins_miss(i_miss),
 	
-	.data_reads(d_hit),
-	.data_writes(d_miss),
-	.data_hit(d_reads),
-	.data_miss(d_writes)
+	.data_reads(d_reads),
+	.data_writes(d_writes),
+	.data_hit(d_hit),
+	.data_miss(d_miss)
     );
 
-DATA_CACHE instance_name (
+DATA_CACHE d_cache (
     .n(n), 
     .add_in(add_in), 
     .clk(dclk), 
