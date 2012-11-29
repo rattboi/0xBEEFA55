@@ -80,10 +80,10 @@ module INS_CACHE(
 			begin
 				for (j = 0; j < `WAYS; j = j+1'b1)
 					if (!done)
-						if (Tag[curr_index][i] == curr_tag)
+						if (Tag[curr_index][j] == curr_tag)
 						begin
 							done = 1'b1;
-							Valid[curr_index][i] = 1'b0;
+							Valid[curr_index][j] = 1'b0;
 						end
 			end	
 			
@@ -119,7 +119,7 @@ module INS_CACHE(
 						if (Valid[curr_index][j] == 1'b0)
 						begin
 							done 				= 1'b1;
-							add_out				= add_in[25:0]; // is this right?
+							add_out				= add_in[31:6]; // is this right?
 							Tag[curr_index][j] 	= curr_tag;
 							Valid[curr_index][j]= 1'b1;
 						end
@@ -129,7 +129,7 @@ module INS_CACHE(
 				// so evict the LRU
 				if (!done)
 					begin
-						add_out	= add_in[25:0]; // is this right?
+						add_out	= add_in[31:6]; // is this right?
 						Tag[curr_index][LRU[curr_index]] = curr_tag;  
 						Valid[curr_index][LRU[curr_index]] = 1'b1;   
 					end
