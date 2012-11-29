@@ -31,6 +31,12 @@ module INS_CACHE(
 	parameter INST_FETCH 	= 4'd2;
 	parameter PRINT			= 4'd9;
 	
+	initial begin
+	hit = 0;
+	miss = 0;
+	reads = 0;
+	end
+	
 	// instantiate cache elements
 	//	size					lines			ways
 	reg 				LRU 	[`LINES-1:0] 			;//  1=LRU is way 1.  0 = LRU way is 0
