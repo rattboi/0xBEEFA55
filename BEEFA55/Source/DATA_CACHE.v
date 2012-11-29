@@ -47,15 +47,16 @@ module DATA_CACHE(
 	 
 	// internal
 	reg done = 1'b0;
-	reg [1:0]lru_way;
-	reg [5:0]new_lru;
+	wire [1:0]lru_way;
+	wire [5:0]new_lru;
+	reg [5:0]lru_calc_in;
 	
 	// assignments
 	wire [11:0] curr_tag = add_in[31:20];
 	wire [13:0] curr_index = add_in[19:6];
 	
 	
-	always @*
+	always @(posedge clk)
 	begin	
 		add_out = 26'bZ;
 		done	= 1'b0;
@@ -97,6 +98,7 @@ module DATA_CACHE(
 					if (!done)
 						if (Tag[curr_index][j] == curr_tag && Valid[curr_index][j] == 1'b1)
 						begin
+							lru_calc_in			= LRU[curr_index];					
 							LRU[curr_index] 	= new_lru; // is this logic right? (Yes, I think it is, NOW --rattboi)
 							done 				= 1'b1;
 							hit 				= hit + 1'b1;
@@ -111,6 +113,7 @@ module DATA_CACHE(
 					if (!done)
 						if (Valid[curr_index][j] == 1'b0)
 						begin
+							lru_calc_in				= LRU[curr_index];
 							done 					= 1'b1;
 							add_out					= add_in[31:6]; 
 							Tag[curr_index][j] 		= curr_tag;
@@ -121,6 +124,7 @@ module DATA_CACHE(
 				
 				if (!done)
 					begin
+						lru_calc_in					= LRU[curr_index];
 						add_out						= add_in[31:6]; 
 						Tag[curr_index][lru_way] 	= curr_tag;  
 						Valid[curr_index][lru_way] 	= 1'b1;   
@@ -137,6 +141,7 @@ module DATA_CACHE(
 					if (!done)
 						if (Tag[curr_index][j] == curr_tag && Valid[curr_index][j] == 1'b1)
 						begin
+							lru_calc_in				= LRU[curr_index];					
 							add_out					= add_in[31:6]; 
 							LRU[curr_index] 		= new_lru; // is this logic right? (Yes, I think it is, NOW --rattboi)
 							done 					= 1'b1;
@@ -152,6 +157,7 @@ module DATA_CACHE(
 					if (!done)
 						if (Valid[curr_index][j] == 1'b0)
 						begin
+							lru_calc_in				= LRU[curr_index];
 							done 					= 1'b1;
 							add_out					= add_in[31:6]; 
 							Tag[curr_index][j] 		= curr_tag;
@@ -163,33 +169,39 @@ module DATA_CACHE(
 
 				if (!done)
 					begin
+						lru_calc_in					= LRU[curr_index];
 						add_out						= add_in[31:6]; 
 						Tag[curr_index][lru_way] 	= curr_tag;  
 						Valid[curr_index][lru_way] 	= 1'b1;   
 						LRU[curr_index] 			= new_lru;
 						add_out						= add_in[31:6]; 							
 					end
+			end
 					
 			PRINT:
 			begin
-			//	$display("--- END OF INSTRUCTION CACHE CONTENTS ----");
 				$display("----------- DATA CACHE CONTENTS ----------");
 				$display(" INDEX | LRU | V[3]| Tag[3] | V[2]| Tag[2]| V[1]| Tag[1] | V[0]| Tag[0]");
 				for (j = 0;	j < `LINES; j = j+1)
-					if (Valid[j][0] | Valid[j][1])
+				begin
+					if (Valid[j][3] | Valid[j][2] | Valid[j][1] | Valid[j][0] )
+					begin
+						lru_calc_in	= LRU[j];
 						$display(" %4h  |  %d  |  %d  | %6h |  %d  | %6h |  %d  | %6h |  %d  | %6h", 
 							j[`LINEBITS-1:0], 
 							lru_way, 
 							Valid[j][3], 
 							Valid[j][3] ? Tag[j][3] : `TAGBITS'hX, 
 							Valid[j][2], 
-							Valid[j][2] ? Tag[j][2] : `TAGBITS'hX
+							Valid[j][2] ? Tag[j][2] : `TAGBITS'hX,
 							Valid[j][1], 
 							Valid[j][1] ? Tag[j][1] : `TAGBITS'hX, 
 							Valid[j][0], 
 							Valid[j][0] ? Tag[j][0] : `TAGBITS'hX							
 						); 
-				$display("--- END OF INSTRUCTION CACHE CONTENTS ----");
+					end
+				$display("------- END OF DATA CACHE CONTENTS -------");
+				end
 			end
 			
 			default: ;	// commands this module doesn't respond to
@@ -197,7 +209,7 @@ module DATA_CACHE(
 	end
 				
 LRU_BITS LRU_CALC (
-    .LRU_in(LRU[curr_index]), 
+    .LRU_in(lru_calc_in), 
     .Way(j[1:0]), 
     .LRU(lru_way), 
     .LRU_out(new_lru)
