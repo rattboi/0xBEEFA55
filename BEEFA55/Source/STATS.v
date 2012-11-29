@@ -24,9 +24,9 @@ module STATS(
 	always @(posedge print)
 	begin
 		$display(" STATISTICS: ");
-		$display(" Hits = %d", data_hit + ins_hit);
-		$display(" Miss = %d", data_miss + ins_miss);
-		$display(" Reads = %d", data_reads + ins_reads);
+		$display(" Hits   = %d", data_hit + ins_hit);
+		$display(" Miss   = %d", data_miss + ins_miss);
+		$display(" Reads  = %d", data_reads + ins_reads);
 		$display(" Writes = %d", data_writes);
 		$display(" Hit Ratio = %.1f%%", 100.0*(data_hit + ins_hit)/(data_reads + ins_reads + data_writes));
 	end	
