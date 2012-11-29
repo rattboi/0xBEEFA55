@@ -99,7 +99,7 @@ module INS_CACHE(
 					if (!done)
 						if (Tag[curr_index][j] == curr_tag && Valid[curr_index][j] == 1'b1)
 						begin
-							LRU[curr_index] 	= j[0]; // is this logic right?
+							LRU[curr_index] 	= ~j[0]; // is this logic right? (Yes, I think it is, NOW --rattboi)
 							done 				= 1'b1;
 							hit 				= hit + 1'b1;
 						end
