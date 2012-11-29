@@ -46,10 +46,13 @@ module DATA_CACHE(
 	 
 	// internal
 	reg done = 1'b0;
+	reg [1:0]lru_way;
+	reg [5:0]new_lru;
 	
 	// assignments
 	wire [11:0] curr_tag = add_in[31:20];
 	wire [13:0] curr_index = add_in[19:6];
+	
 	
 	always @*
 	begin	
@@ -65,7 +68,7 @@ module DATA_CACHE(
 				
 				for (i = 0; i < `LINES; i = i+1'b1) 	// for every line
 				begin
-					LRU[i] = 1'b0;	
+					LRU[i] = 6'b0;	
 					for (j = 0; j < `WAYS; j = j+1'b1)	// for all ways
 					begin
 						Valid	[i][j]	= 1'b0;	
@@ -85,6 +88,96 @@ module DATA_CACHE(
 						end
 			end	
 			
+			READ:
+			begin
+				reads = reads + 1'b1;
+				for (j = 0; j < `WAYS; j = j+1'b1)
+				begin
+					if (!done)
+						if (Tag[curr_index][j] == curr_tag && Valid[curr_index][j] == 1'b1)
+						begin
+							LRU[curr_index] 	= new_lru; // is this logic right? (Yes, I think it is, NOW --rattboi)
+							done 				= 1'b1;
+							hit 				= hit + 1'b1;
+						end
+				end	
+				
+				if (!done)
+					miss = miss + 1'b1;
+				
+				for (j = 0; j < `WAYS; j = j+1'b1)
+				begin
+					if (!done)
+						if (Valid[curr_index][j] == 1'b0)
+						begin
+							done 					= 1'b1;
+							add_out					= add_in[31:6]; 
+							Tag[curr_index][j] 		= curr_tag;
+							Valid[curr_index][j]	= 1'b1;
+							LRU[curr_index] 		= new_lru;
+						end
+				end
+				
+				if (!done)
+					begin
+						add_out						= add_in[31:6]; 
+						Tag[curr_index][lru_way] 	= curr_tag;  
+						Valid[curr_index][lru_way] 	= 1'b1;   
+						LRU[curr_index] 			= new_lru;
+					end
+			end
 			
-	
+			WRITE:
+			begin
+				writes = writes + 1;
+				
+				for (j = 0; j < `WAYS; j = j+1'b1)
+				begin
+					if (!done)
+						if (Tag[curr_index][j] == curr_tag && Valid[curr_index][j] == 1'b1)
+						begin
+							add_out					= add_in[31:6]; 
+							LRU[curr_index] 		= new_lru; // is this logic right? (Yes, I think it is, NOW --rattboi)
+							done 					= 1'b1;
+							hit 					= hit + 1'b1;
+						end
+				end	
+				
+				if (!done)
+					miss = miss + 1'b1;
+				
+				for (j = 0; j < `WAYS; j = j+1'b1)
+				begin
+					if (!done)
+						if (Valid[curr_index][j] == 1'b0)
+						begin
+							done 					= 1'b1;
+							add_out					= add_in[31:6]; 
+							Tag[curr_index][j] 		= curr_tag;
+							Valid[curr_index][j]	= 1'b1;
+							LRU[curr_index] 		= new_lru;
+							add_out					= add_in[31:6]; 							
+						end
+				end			
+
+				if (!done)
+					begin
+						add_out						= add_in[31:6]; 
+						Tag[curr_index][lru_way] 	= curr_tag;  
+						Valid[curr_index][lru_way] 	= 1'b1;   
+						LRU[curr_index] 			= new_lru;
+						add_out						= add_in[31:6]; 							
+					end
+			end
+				
+LRU_BITS LRU_CALC (
+    .LRU_in(LRU[curr_index]), 
+    .Way(j[1:0]), 
+    .LRU(lru_way), 
+    .LRU_out(new_lru)
+    );
+
+
+				
 endmodule
+
