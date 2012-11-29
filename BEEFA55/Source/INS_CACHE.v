@@ -17,7 +17,7 @@ module INS_CACHE(
 	// INPUTS
 	input [3:0] n,			// from trace file
 	input [31:0] add_in,	// from trace file
-	
+	input clk,
 	// OUTPUTS
 	output reg [25:0] add_out,	// to next-level cache
 	output reg [31:0] hit,		// to statistics module
@@ -53,7 +53,7 @@ module INS_CACHE(
 	wire [11:0] curr_tag = add_in[31:20];
 	wire [13:0] curr_index = add_in[19:6];
 	 
-	always @*
+	always @(posedge clk)
 	begin	
 		add_out = 26'bZ;
 		done	= 1'b0;
@@ -107,8 +107,9 @@ module INS_CACHE(
 				end
 				
 				//	if execution exits this loop and done still == 0, then 
-				// 	the ins. fetch was not a hit.  so increase miss.		
-				miss = miss + 1'b1;
+				// 	the ins. fetch was not a hit.  so increase miss.	
+				if (!done)
+					miss = miss + 1'b1;
 				
 				// look at both ways.  If either is empty (valid == 0) then 
 				// do a read and and put it in the empty way.  If this happens,
@@ -122,6 +123,7 @@ module INS_CACHE(
 							add_out				= add_in[31:6]; // is this right?
 							Tag[curr_index][j] 	= curr_tag;
 							Valid[curr_index][j]= 1'b1;
+							
 						end
 				end
 				

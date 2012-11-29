@@ -54,16 +54,19 @@ initial begin
       // If it was, open the file
       file = $fopen(filename, "r");
       count = 2;
+		
+		// simulate initial reset
+		#CLOCK_WIDTH Clock = 0;
+		command = 4'd8;
+		#CLOCK_WIDTH Clock = 1;
+		
+		
       // While there are lines left to be read:
       while (count > 1) begin
 	 // Parse the line
+	 #CLOCK_WIDTH Clock = 0;
 	 count = $fscanf(file, "%d %x", command, value);
-	 if(count > 1) begin
-	   // Display each line
-		 #CLOCK_WIDTH Clock = ~Clock;
-		 #CLOCK_WIDTH Clock = ~Clock;
-	    //$display("command = %d value = %x", command, value);
-	 end
+	 #CLOCK_WIDTH Clock = 1;
       end
 		
       // Close the file, and finish up
