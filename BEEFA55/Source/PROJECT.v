@@ -37,8 +37,8 @@ module PROJECT(
 	wire [31:0] d_writes;
 	
 	// signals for n
-	wire [3:0] ins_n, dat_n;
-	wire print_stats;
+	reg [3:0] ins_n, dat_n;
+	reg print_stats;
 	
 	// mux n to prevent interleaving on print output cmd
 	always @(n)
