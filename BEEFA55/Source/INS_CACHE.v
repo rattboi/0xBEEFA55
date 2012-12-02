@@ -144,8 +144,7 @@ module INS_CACHE(
 			end
 			
 			PRINT:
-			begin
-				#2
+			begin				
 				$display("\n------- INSTRUCTION CACHE CONTENTS -------");
 				$display(" Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]");
 				for (way_cnt = 0;	way_cnt < `LINES; way_cnt = way_cnt+1)
