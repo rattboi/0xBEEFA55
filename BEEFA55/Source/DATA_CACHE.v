@@ -192,6 +192,7 @@ module DATA_CACHE(
 					
 			PRINT:
 			begin
+			#1
 				$display("----------- DATA CACHE CONTENTS ----------");
 				$display(" INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]");
 				for (way_cnt = 0;	way_cnt < `LINES; way_cnt = way_cnt+1)
