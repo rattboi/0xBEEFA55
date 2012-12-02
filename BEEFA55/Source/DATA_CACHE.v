@@ -188,7 +188,7 @@ module DATA_CACHE(
 					if (Valid[way_cnt][3] | Valid[way_cnt][2] | Valid[way_cnt][1] | Valid[way_cnt][0] )
 					begin
 						lru_calc_in	= LRU[way_cnt];
-						$display(" %4h  |  %d  |  %d  | %6h |  %d  | %6h |  %d  | %6h |  %d  | %6h", 
+						$display(" %4h  |  %d  |  %d  | %3h |  %d  | %3h |  %d  | %3h |  %d  | %3h", 
 							way_cnt[`LINEBITS-1:0], 
 							lru_way, 
 							Valid[way_cnt][3], 
