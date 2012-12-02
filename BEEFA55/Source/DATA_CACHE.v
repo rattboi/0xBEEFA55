@@ -10,9 +10,9 @@
 //
 //
 ////////////////////////////////////////////////////////////////////////////////
-`define LINES 1024*16
+`define SETS 1024*16
 `define WAYS 4
-`define LINEBITS 14
+`define SETBITS 14
 `define	TAGBITS 12
 
 module DATA_CACHE(
@@ -37,13 +37,13 @@ module DATA_CACHE(
 	parameter PRINT			= 4'd9;
 	
 	// instantiate cache elements
-	//	size					lines			ways
-	reg [5:0]			LRU 	[`LINES-1:0] 			;//  1=LRU is way 1.  0 = LRU way is 0
-	reg  				Valid	[`LINES-1:0] [`WAYS-1:0];
-	reg [11:0] 			Tag 	[`LINES-1:0] [`WAYS-1:0];
+	//	size					sets			ways
+	reg [5:0]			LRU 	[`SETS-1:0] 			;//  1=LRU is way 1.  0 = LRU way is 0
+	reg  				Valid	[`SETS-1:0] [`WAYS-1:0];
+	reg [11:0] 			Tag 	[`SETS-1:0] [`WAYS-1:0];
 	
 	// loop counters
-	integer line_cnt,way_cnt;
+	integer set_cnt,way_cnt;
 	 
 	// internal
 	reg done = 1'b0;
@@ -69,13 +69,13 @@ module DATA_CACHE(
 				miss 	= 32'b0;
 				reads	= 32'b0;
 				writes = 32'b0;
-				for (line_cnt = 0; line_cnt < `LINES; line_cnt = line_cnt + 1'b1) 	// for every line
+				for (set_cnt = 0; set_cnt < `SETS; set_cnt = set_cnt + 1'b1) 	// for every set
 				begin
-					LRU[line_cnt] = 6'b0;	
+					LRU[set_cnt] = 6'b0;	
 					for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)	// for all ways
 					begin
-						Valid	[line_cnt][way_cnt]	= 1'b0;	
-						Tag  	[line_cnt][way_cnt]	= 24'b0;
+						Valid	[set_cnt][way_cnt]	= 1'b0;	
+						Tag  	[set_cnt][way_cnt]	= 24'b0;
 					end
 				end
 			end
@@ -138,10 +138,14 @@ module DATA_CACHE(
 					end
 			end
 			
+			// do the following if a write command was passed in
 			WRITE:
 			begin
+				// increment the number of total writes since reset occurred 
 				writes = writes + 1;
 				
+				// search the ways within the set, if there is a hit, update the LRU
+				// and increment the hit counter
 				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
 				begin
 					if (!done)
@@ -151,15 +155,18 @@ module DATA_CACHE(
                      go = 1'b1; 
 							#1 go = 1'b0;
 							add_out					= add_in[31:6]; 
-							LRU[curr_index] 		= new_lru; // is this logic right? (Yes, I think it is, NOW --rattboi)
+							LRU[curr_index] 		= new_lru; 
 							done 					= 1'b1;
 							hit 					= hit + 1'b1;
 						end
 				end	
 				
+				// if there was no hit, increment the miss counter
 				if (!done)
 					miss = miss + 1'b1;
-				
+
+				// if there was no hit, check to see if there is an empty
+				// 
 				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
 				begin
 					if (!done)
@@ -190,20 +197,24 @@ module DATA_CACHE(
 					end
 			end
 					
+			// Print all of the contents of the Data Cache
 			PRINT:
 			begin
 			#1
+				// print header
 				$display("----------- DATA CACHE CONTENTS ----------");
 				$display(" INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]");
-				for (way_cnt = 0;	way_cnt < `LINES; way_cnt = way_cnt+1)
+				// cycle through all of the ways within a set
+				for (way_cnt = 0;	way_cnt < `SETS; way_cnt = way_cnt+1)
 				begin
+					// print out the whole set if there is any valid data in the set
 					if (Valid[way_cnt][3] | Valid[way_cnt][2] | Valid[way_cnt][1] | Valid[way_cnt][0] )
 					begin
 						lru_calc_in	= LRU[way_cnt];
 						go = 1'b1; 
 						#1 go = 1'b0;
 						$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h", 
-							way_cnt[`LINEBITS-1:0], 
+							way_cnt[`SETBITS-1:0], 
 							lru_way, 
 							Valid[way_cnt][0], 
 							Valid[way_cnt][0] ? Tag[way_cnt][0] : `TAGBITS'hX, 
@@ -223,6 +234,7 @@ module DATA_CACHE(
 		endcase		
 	end
 				
+// Instantiate the module used to calculate the LRU within the cache
 LRU_BITS LRU_CALC (
     .go(go),		   
     .LRU_in(lru_calc_in), 
