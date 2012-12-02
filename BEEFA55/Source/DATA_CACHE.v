@@ -50,6 +50,7 @@ module DATA_CACHE(
 	wire [1:0]lru_way;
 	wire [5:0]new_lru;
 	reg [5:0]lru_calc_in;
+  reg go;
 	
 	// assignments
 	wire [11:0] curr_tag = add_in[31:20];
@@ -114,6 +115,7 @@ module DATA_CACHE(
 						if (Valid[curr_index][way_cnt] == 1'b0)
 						begin
 							lru_calc_in				= LRU[curr_index];
+              go = 1'b1; go = 0'b1;
 							done 					= 1'b1;
 							add_out					= add_in[31:6]; 
 							Tag[curr_index][way_cnt] 		= curr_tag;
@@ -126,6 +128,7 @@ module DATA_CACHE(
 					
 					begin
 						lru_calc_in					= LRU[curr_index];
+            go = 1'b1; go = 0'b1;
 						add_out						= add_in[31:6]; 
 						Tag[curr_index][lru_way] 	= curr_tag;  
 						Valid[curr_index][lru_way] 	= 1'b1;   
@@ -143,6 +146,7 @@ module DATA_CACHE(
 						if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == 1'b1)
 						begin
 							lru_calc_in				= LRU[curr_index];					
+              go = 1'b1; go = 0'b1;
 							add_out					= add_in[31:6]; 
 							LRU[curr_index] 		= new_lru; // is this logic right? (Yes, I think it is, NOW --rattboi)
 							done 					= 1'b1;
@@ -159,6 +163,7 @@ module DATA_CACHE(
 						if (Valid[curr_index][way_cnt] == 1'b0)
 						begin
 							lru_calc_in				= LRU[curr_index];
+              go = 1'b1; go = 0'b1;
 							done 					= 1'b1;
 							add_out					= add_in[31:6]; 
 							Tag[curr_index][way_cnt] 		= curr_tag;
@@ -171,6 +176,7 @@ module DATA_CACHE(
 				if (!done)
 					begin
 						lru_calc_in					= LRU[curr_index];
+            go = 1'b1; go = 0'b1;
 						add_out						= add_in[31:6]; 
 						Tag[curr_index][lru_way] 	= curr_tag;  
 						Valid[curr_index][lru_way] 	= 1'b1;   
@@ -188,6 +194,7 @@ module DATA_CACHE(
 					if (Valid[way_cnt][3] | Valid[way_cnt][2] | Valid[way_cnt][1] | Valid[way_cnt][0] )
 					begin
 						lru_calc_in	= LRU[way_cnt];
+            go = 1'b1; go = 0'b1;
 						$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h", 
 							way_cnt[`LINEBITS-1:0], 
 							lru_way, 
@@ -201,7 +208,6 @@ module DATA_CACHE(
 							Valid[way_cnt][0] ? Tag[way_cnt][0] : `TAGBITS'hX							
 						); 
 					end
-				
 				end
 				$display("------- END OF DATA CACHE CONTENTS -------");
 			end
