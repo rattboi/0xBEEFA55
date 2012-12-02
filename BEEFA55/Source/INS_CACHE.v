@@ -11,7 +11,7 @@
 `define LINES 1024*16
 `define WAYS 2
 `define LINEBITS 14
-`define	TAGBITS 24
+`define	TAGBITS 12
 
 module INS_CACHE(
 	// INPUTS
@@ -41,7 +41,7 @@ module INS_CACHE(
 	//	size					lines			ways
 	reg 				LRU 	[`LINES-1:0] 			;//  1=LRU is way 1.  0 = LRU way is 0
 	reg  				Valid	[`LINES-1:0] [`WAYS-1:0];
-	reg [23:0] 			Tag 	[`LINES-1:0] [`WAYS-1:0];
+	reg [11:0] 			Tag 	[`LINES-1:0] [`WAYS-1:0];
 	
 	// loop counters
 	integer i,j;
@@ -142,10 +142,10 @@ module INS_CACHE(
 			PRINT:
 			begin
 				$display("------- INSTRUCTION CACHE CONTENTS -------");
-				$display(" Index | LRU | V[1]| Tag[1] | V[0]| Tag[0]");
+				$display(" Index | LRU | V[1]|Tag[1]| V[0]|Tag[0]");
 				for (j = 0;	j < `LINES; j = j+1)
 					if (Valid[j][0] | Valid[j][1])
-						$display(" %4h  |  %d  |  %d  | %3h |  %d  | %3h", 
+						$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h", 
 							j[`LINEBITS-1:0], 
 							LRU[j], 
 							Valid[j][1], 

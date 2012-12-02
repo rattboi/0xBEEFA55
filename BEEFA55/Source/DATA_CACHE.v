@@ -13,7 +13,7 @@
 `define LINES 1024*16
 `define WAYS 4
 `define LINEBITS 14
-`define	TAGBITS 24
+`define	TAGBITS 12
 
 module DATA_CACHE(
 	// INPUTS
@@ -40,7 +40,7 @@ module DATA_CACHE(
 	//	size					lines			ways
 	reg [5:0]			LRU 	[`LINES-1:0] 			;//  1=LRU is way 1.  0 = LRU way is 0
 	reg  				Valid	[`LINES-1:0] [`WAYS-1:0];
-	reg [23:0] 			Tag 	[`LINES-1:0] [`WAYS-1:0];
+	reg [11:0] 			Tag 	[`LINES-1:0] [`WAYS-1:0];
 	
 	// loop counters
 	integer line_cnt,way_cnt;
@@ -182,13 +182,13 @@ module DATA_CACHE(
 			PRINT:
 			begin
 				$display("----------- DATA CACHE CONTENTS ----------");
-				$display(" INDEX | LRU | V[3]| Tag[3] | V[2]| Tag[2]| V[1]| Tag[1] | V[0]| Tag[0]");
+				$display(" INDEX | LRU | V[3]|Tag[3]| V[2]|Tag[2]| V[1]|Tag[1]| V[0]|Tag[0]");
 				for (way_cnt = 0;	way_cnt < `LINES; way_cnt = way_cnt+1)
 				begin
 					if (Valid[way_cnt][3] | Valid[way_cnt][2] | Valid[way_cnt][1] | Valid[way_cnt][0] )
 					begin
 						lru_calc_in	= LRU[way_cnt];
-						$display(" %4h  |  %d  |  %d  | %3h |  %d  | %3h |  %d  | %3h |  %d  | %3h", 
+						$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h", 
 							way_cnt[`LINEBITS-1:0], 
 							lru_way, 
 							Valid[way_cnt][3], 
