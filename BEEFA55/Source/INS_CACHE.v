@@ -17,36 +17,38 @@ module INS_CACHE(
 	// INPUTS
 	input [3:0] n,			// from trace file
 	input [31:0] add_in,	// from trace file
+	
 	input clk,
 	// OUTPUTS
-	output reg [25:0] add_out,	// to next-level cache
-	output reg [31:0] hit,		// to statistics module
-	output reg [31:0] miss,		// to statistics module
-	output reg [31:0] reads
+	output reg [25:0] add_out = 32'bZ,	// to next-level cache
+	output reg [1:0]  cmd_out = 2'b00,			// to next-level cache
+	output reg [31:0] hit = 32'b0,		// to statistics module
+	output reg [31:0] miss = 32'b0,		// to statistics module
+	output reg [31:0] reads	= 32'b0	// to statistics module
   );
+  
+	parameter TRUE 			= 1'b1;
+	parameter FALSE			= 1'b0;
 	
-	// instruction cache only reponds to following values of n
+	// instruction cache only reponds to following values of n:
 	parameter RESET 	 	= 4'd8;
 	parameter INVALIDATE 	= 4'd3;
 	parameter INST_FETCH 	= 4'd2;
 	parameter PRINT			= 4'd9;
 	
-
-	// initialize counters to zero
-	initial begin
-	hit = 0;
-	miss = 0;
-	reads = 0;
-	end
+	// instruction cache sends following commands to next-level cache
+	parameter READ_OUT		= 2'b01;
 	
-	// instantiate cache elements
-	//	size					lines			ways
-	reg 				LRU 	[`LINES-1:0] 			;//  1=LRU is way 1.  0 = LRU way is 0
-	reg  				Valid	[`LINES-1:0] [`WAYS-1:0];
-	reg [11:0] 			Tag 	[`LINES-1:0] [`WAYS-1:0];
+//	CACHE ELEMENTS
+	// LRU: 1 bit per line. Encoding:  1 = Way 1 is LRU.  0 = Way 0 is LRU
+	reg LRU [`LINES-1:0];
+	// Valid: 1 bit per way.  Encoding:  1 = Location is valid, 0 = not valid
+	reg Valid [`LINES-1:0][`WAYS-1:0];
+	// Tag: Tag is of size TAGBITS.  One tag per way.
+	reg [`TAGBITS-1:0] Tag [`LINES-1:0][`WAYS-1:0];
 	
 	// loop counters
-	integer line_cnt,way_cnt;
+	integer line_cnt, way_cnt;
 	 
 	// internal
 	reg done = 1'b0;
@@ -54,16 +56,15 @@ module INS_CACHE(
 	// assignments
 	wire [11:0] curr_tag = add_in[31:20];
 	wire [13:0] curr_index = add_in[19:6];
-	 
 
-	//
 	always @(posedge clk)
 	begin	
-		add_out = 26'bZ;
-		done	= 1'b0;
-				
+		add_out = 26'bZ;	// always initialize address out to high-z
+		done	= FALSE;		// and set internal done signal to false
+		
 		case(n)
-			RESET:	// clear all bits in cache
+			// RESET: iterates through all elements in the cache and 
+			RESET:
 			begin
 				hit 	= 32'b0;
 				miss 	= 32'b0;
@@ -72,10 +73,10 @@ module INS_CACHE(
 				for (line_cnt = 0; line_cnt < `LINES; line_cnt = line_cnt + 1'b1) 	// for every line
 				begin
 					LRU[line_cnt] = 1'b0;	
-					for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt+1'b1)	// for all ways
+					for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)	// for all ways
 					begin
 						Valid	[line_cnt][way_cnt]	= 1'b0;	
-						Tag  	[line_cnt][way_cnt]	= 24'b0;
+						Tag  	[line_cnt][way_cnt]	= `TAGBITS'b0;
 					end
 				end
 			end
