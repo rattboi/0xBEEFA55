@@ -57,7 +57,7 @@ module PROJECT(
 	end
 
 	INS_CACHE i_cache (
-    .clk(iclk), 
+    .clk(clk), 
     .n(ins_n), 
     .add_in(add_in), 
     .add_out(add_out),	
@@ -80,7 +80,7 @@ STATS stats(
 DATA_CACHE d_cache (
     .n(dat_n), 
     .add_in(add_in), 
-    .clk(dclk), 
+    .clk(clk), 
     .add_out(add_out), 
     .hit(d_hit), 
     .miss(d_miss), 
