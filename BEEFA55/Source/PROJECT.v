@@ -35,28 +35,10 @@ module PROJECT(
 	wire [31:0] i_reads;
 	wire [31:0] d_reads;
 	wire [31:0] d_writes;
-	
-	// signals for n
-	reg [3:0] ins_n, dat_n;
-	
-	// mux n to prevent interleaving on print output cmd
-	always @(n)
-	begin
-		case (n)
-			4'd9:	
-			begin
-				   {ins_n, dat_n}	= {4'd9, 4'bZZZZ};
-				#1 {ins_n, dat_n}	= {4'bZZZZ, 4'd9};
-			end
-			
-			default: 
-				   {ins_n, dat_n}	= {n, n};
-		endcase
-	end
 
 	INS_CACHE i_cache (
     .clk(clk), 
-    .n(ins_n), 
+    .n(n), 
     .add_in(add_in), 
     .add_out(add_out),	
     .hit(i_hit), 
@@ -76,7 +58,7 @@ STATS stats(
     );
 
 DATA_CACHE d_cache (
-    .n(dat_n), 
+    .n(n), 
     .add_in(add_in), 
     .clk(clk), 
     .add_out(add_out), 
