@@ -37,20 +37,28 @@ module PROJECT(
 	wire [31:0] d_writes;
 	
 	// signals for n
-	reg iclk, dclk;
+	wire [3:0] ins_n, dat_n;
+	wire print_stats;
 	
-	always @(posedge clk or negedge clk)
+	// mux n to prevent interleaving on print output cmd
+	always @(n)
 	begin
-		iclk = clk;
-		dclk = clk;
+		case (n)
+			4'd9:	
+			begin
+				   {ins_n, dat_n, print_stats}	= {4'd9, 4'bZZZZ, 1'b0};
+				#1 {ins_n, dat_n, print_stats}	= {4'bZZZZ, 4'd9, 1'b0};
+				#1 {ins_n, dat_n, print_stats}	= {4'bZZZZ, 4'bZZZZ, 1'b1};
+			end
+			
+			default: 
+				{ins_n, dat_n, print_stats}	= {n, n, 1'b0};
+		endcase
 	end
-	
-	
-	// do file input and stream to caches
 
 	INS_CACHE i_cache (
     .clk(iclk), 
-    .n(n), 
+    .n(ins_n), 
     .add_in(add_in), 
     .add_out(add_out),	
     .hit(i_hit), 
@@ -59,12 +67,10 @@ module PROJECT(
     );
 	
 STATS stats(
-	// INPUTS
-    .print(done),			// mux to determine reads/writes
-   .ins_reads(i_reads),
+    .print(done|print_stats),
+	.ins_reads(i_reads),
 	.ins_hit(i_hit),
 	.ins_miss(i_miss),
-	
 	.data_reads(d_reads),
 	.data_writes(d_writes),
 	.data_hit(d_hit),
@@ -72,7 +78,7 @@ STATS stats(
     );
 
 DATA_CACHE d_cache (
-    .n(n), 
+    .n(dat_n), 
     .add_in(add_in), 
     .clk(dclk), 
     .add_out(add_out), 
