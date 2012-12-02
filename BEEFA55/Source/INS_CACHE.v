@@ -8,9 +8,9 @@
 // Description:
 //
 ////////////////////////////////////////////////////////////////////////////////
-`define LINES 1024*16
+`define SETS 1024*16
 `define WAYS 2
-`define LINEBITS 14
+`define SETBITS 14
 `define	TAGBITS 12
 
 module INS_CACHE(
@@ -40,15 +40,15 @@ module INS_CACHE(
 	parameter READ_OUT		= 2'b01;
 	
 //	CACHE ELEMENTS
-	// LRU: 1 bit per line. Encoding:  1 = Way 1 is LRU.  0 = Way 0 is LRU
-	reg LRU [`LINES-1:0];
+	// LRU: 1 bit per set. Encoding:  1 = Way 1 is LRU.  0 = Way 0 is LRU
+	reg LRU [`SETS-1:0];
 	// Valid: 1 bit per way.  Encoding:  1 = Location is valid, 0 = not valid
-	reg Valid [`LINES-1:0][`WAYS-1:0];
+	reg Valid [`SETS-1:0][`WAYS-1:0];
 	// Tag: Tag is of size TAGBITS.  One tag per way.
-	reg [`TAGBITS-1:0] Tag [`LINES-1:0][`WAYS-1:0];
+	reg [`TAGBITS-1:0] Tag [`SETS-1:0][`WAYS-1:0];
 	
 	// loop counters
-	integer line_cnt, way_cnt;
+	integer set_cnt, way_cnt;
 	 
 	// internal
 	reg done = 1'b0;
@@ -70,13 +70,13 @@ module INS_CACHE(
 				miss 	= 32'b0;
 				reads	= 32'b0;
 				
-				for (line_cnt = 0; line_cnt < `LINES; line_cnt = line_cnt + 1'b1) 	// for every line
+				for (set_cnt = 0; set_cnt < `SETS; set_cnt = set_cnt + 1'b1) 	// for every set
 				begin
-					LRU[line_cnt] = 1'b0;	
+					LRU[set_cnt] = 1'b0;	
 					for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)	// for all ways
 					begin
-						Valid	[line_cnt][way_cnt]	= 1'b0;	
-						Tag  	[line_cnt][way_cnt]	= `TAGBITS'b0;
+						Valid	[set_cnt][way_cnt]	= 1'b0;	
+						Tag  	[set_cnt][way_cnt]	= `TAGBITS'b0;
 					end
 				end
 			end
@@ -148,10 +148,10 @@ module INS_CACHE(
 			begin				
 				$display("\n------- INSTRUCTION CACHE CONTENTS -------");
 				$display(" Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]");
-				for (way_cnt = 0;	way_cnt < `LINES; way_cnt = way_cnt+1)
+				for (way_cnt = 0;	way_cnt < `SETS; way_cnt = way_cnt+1)
 					if (Valid[way_cnt][0] | Valid[way_cnt][1])
 						$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h", 
-							way_cnt[`LINEBITS-1:0], 
+							way_cnt[`SETBITS-1:0], 
 							LRU[way_cnt], 
 							Valid[way_cnt][0], 
 							Valid[way_cnt][0] ? Tag[way_cnt][0] : `TAGBITS'hX, 
