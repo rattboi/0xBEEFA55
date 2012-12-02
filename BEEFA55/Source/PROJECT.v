@@ -38,7 +38,6 @@ module PROJECT(
 	
 	// signals for n
 	reg [3:0] ins_n, dat_n;
-	reg print_stats;
 	
 	// mux n to prevent interleaving on print output cmd
 	always @(n)
@@ -46,13 +45,12 @@ module PROJECT(
 		case (n)
 			4'd9:	
 			begin
-				   {ins_n, dat_n, print_stats}	= {4'd9, 4'bZZZZ, 1'b0};
-				#1 {ins_n, dat_n, print_stats}	= {4'bZZZZ, 4'd9, 1'b0};
-				#1 {ins_n, dat_n, print_stats}	= {4'bZZZZ, 4'bZZZZ, 1'b1};
+				   {ins_n, dat_n}	= {4'd9, 4'bZZZZ};
+				#1 {ins_n, dat_n}	= {4'bZZZZ, 4'd9};
 			end
 			
 			default: 
-				{ins_n, dat_n, print_stats}	= {n, n, 1'b0};
+				   {ins_n, dat_n}	= {n, n};
 		endcase
 	end
 
@@ -67,7 +65,7 @@ module PROJECT(
     );
 	
 STATS stats(
-    .print(done|print_stats),
+    .print(done),
 	.ins_reads(i_reads),
 	.ins_hit(i_hit),
 	.ins_miss(i_miss),
