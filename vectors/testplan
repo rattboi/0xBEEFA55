@@ -1,0 +1,4 @@
+This directory contains test vectors for our simulated L1 cache. Due
+to the limited syntax of the trace file format, it is impossible to
+put comments about each test in its file. Therefore, the tests are described below: 
+
