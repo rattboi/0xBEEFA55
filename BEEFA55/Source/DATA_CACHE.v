@@ -213,8 +213,6 @@ module DATA_CACHE(
 LRU_BITS LRU_CALC (
     .LRU_in(lru_calc_in), 
     .Way(way_cnt[1:0]), 
-    .LRU_in(LRU[curr_index]), 
-    .Way(way_cnt[1:0]), 
     .LRU(lru_way), 
     .LRU_out(new_lru)
     );
