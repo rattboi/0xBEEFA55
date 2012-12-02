@@ -143,16 +143,16 @@ module INS_CACHE(
 			begin
 				#2
 				$display("\n------- INSTRUCTION CACHE CONTENTS -------");
-				$display(" Index | LRU | V[1]|Tag[1]| V[0]|Tag[0]");
+				$display(" Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]");
 				for (j = 0;	j < `LINES; j = j+1)
 					if (Valid[j][0] | Valid[j][1])
 						$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h", 
 							j[`LINEBITS-1:0], 
 							LRU[j], 
-							Valid[j][1], 
-							Valid[j][1] ? Tag[j][1] : `TAGBITS'hX, 
 							Valid[j][0], 
-							Valid[j][0] ? Tag[j][0] : `TAGBITS'hX
+							Valid[j][0] ? Tag[j][0] : `TAGBITS'hX, 
+							Valid[j][1], 
+							Valid[j][1] ? Tag[j][1] : `TAGBITS'hX
 						); 
 				$display("--- END OF INSTRUCTION CACHE CONTENTS ----\n");
 			end

@@ -193,25 +193,25 @@ module DATA_CACHE(
 			PRINT:
 			begin
 				$display("----------- DATA CACHE CONTENTS ----------");
-				$display(" INDEX | LRU | V[3]|Tag[3]| V[2]|Tag[2]| V[1]|Tag[1]| V[0]|Tag[0]");
+				$display(" INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]");
 				for (way_cnt = 0;	way_cnt < `LINES; way_cnt = way_cnt+1)
 				begin
 					if (Valid[way_cnt][3] | Valid[way_cnt][2] | Valid[way_cnt][1] | Valid[way_cnt][0] )
 					begin
 						lru_calc_in	= LRU[way_cnt];
-                  go = 1'b1; 
+						go = 1'b1; 
 						#1 go = 1'b0;
 						$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h", 
 							way_cnt[`LINEBITS-1:0], 
 							lru_way, 
-							Valid[way_cnt][3], 
-							Valid[way_cnt][3] ? Tag[way_cnt][3] : `TAGBITS'hX, 
-							Valid[way_cnt][2], 
-							Valid[way_cnt][2] ? Tag[way_cnt][2] : `TAGBITS'hX,
-							Valid[way_cnt][1], 
-							Valid[way_cnt][1] ? Tag[way_cnt][1] : `TAGBITS'hX, 
 							Valid[way_cnt][0], 
-							Valid[way_cnt][0] ? Tag[way_cnt][0] : `TAGBITS'hX							
+							Valid[way_cnt][0] ? Tag[way_cnt][0] : `TAGBITS'hX, 
+							Valid[way_cnt][1], 
+							Valid[way_cnt][1] ? Tag[way_cnt][1] : `TAGBITS'hX,
+							Valid[way_cnt][2], 
+							Valid[way_cnt][2] ? Tag[way_cnt][2] : `TAGBITS'hX, 
+							Valid[way_cnt][3], 
+							Valid[way_cnt][3] ? Tag[way_cnt][3] : `TAGBITS'hX							
 						); 
 					end
 				end
