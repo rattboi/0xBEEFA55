@@ -150,11 +150,14 @@ module DATA_CACHE(
           
           begin
             lru_calc_in         = LRU[curr_index];
-                  go = 1'b1; 
+            go = 1'b1; 
             #1 go = 1'b0;
             add_out           = add_in[31:6]; 
             Tag[curr_index][lru_way]  = curr_tag;  
             Valid[curr_index][lru_way]  = 1'b1;   
+            way_cnt = lru_way;
+            #1 go = 1'b1; 
+            #1 go = 1'b0;
             LRU[curr_index]       = new_lru;
             cmd_out        = READ_OUT;
           end

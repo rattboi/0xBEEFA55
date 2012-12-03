@@ -12,9 +12,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 module L_NEXT(
 	// INPUTS
-    input [25:0]  i_add_in,		// instruction cache address in
-	input [25:0]  d_add_in		// data cache address in
-	
-    );
+	input [25:0]  i_add_in,		// instruction cache address in
+	input [25:0]  d_add_in		   // data cache address in
+   );
 	
 endmodule

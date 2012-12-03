@@ -1,1 +1,1 @@
--intstyle "ise" -incremental -lib "unisims_ver" -lib "unimacro_ver" -lib "xilinxcorelib_ver" -lib "secureip" -o "/home/agoetz/0xBEEFA55/BEEFA55/work/test_isim_beh.exe" -prj "/home/agoetz/0xBEEFA55/BEEFA55/work/test_beh.prj" "work.test" "work.glbl" 
+-intstyle "ise" -incremental -lib "unisims_ver" -lib "unimacro_ver" -lib "xilinxcorelib_ver" -lib "secureip" -o "/home/rattboi/Dropbox/Senior-1-Fall-2012/ECE485/0xBEEFA55/BEEFA55/work/test_isim_beh.exe" -prj "/home/rattboi/Dropbox/Senior-1-Fall-2012/ECE485/0xBEEFA55/BEEFA55/work/test_beh.prj" "work.test" "work.glbl" 
