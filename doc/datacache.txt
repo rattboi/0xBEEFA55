@@ -1,5 +1,3 @@
-Data Cache:
-
 On clock edge,
   get command
   dispatch to handler
@@ -77,55 +75,3 @@ On clock edge,
     for all the sets in the cache
     if any line is valid, 
       print out that set, including index, lru, valid bits, and tag bits
- 
-Instruction Cache:
-
-On clock edge,
-  get command
-  dispatch to handler
-
-  reset handler:
-    for all sets in cache
-       set LRU bit to 0
-       for all ways in set
-          set Valid bit to 0
-          set tag bits to 0
-       end for
-    end for
-
-  invalidate handler:
-    for all ways in the set indexed by the invalidate command
-      if tag in tag array at offset matches invalidate tag
-        set valid bit for matching tag to 0
-
-  instruction fetch handler:
-    reads++ for stats
-    for all ways in the set indexed by the read command
-      see if the tag of the read address matches any tag in tag array and valid
-      if yes, there's a hit.
-      else miss
-
-      for hit
-        calculate new LRU bit based on hit way being MRU  
-        increase hit count for stats
-
-      for miss
-        increase miss count for stats
-        for all ways in set indexed by read command
-          check if either way is invalid
-
-          if yes,
-            fetch from L2 w/ read_out command
-            calculate new LRU bits based on invalid way being MRU
-            write read tag to tag array indexed by invalid way
-            set the invalid way to be valid now
-          if no, that means your ways are all full. Must evict the LRU way.
-            fetch from L2 w/ read_out command
-            calculate new LRU bits based on evicted way being MRU
-            write read tag to tag array indexed by evicted way
-            
-  print handler:
-    for all the sets in the cache
-    if any line is valid, 
-      print out that set, including index, lru, valid bits, and tag bits
- 
