@@ -26,7 +26,7 @@ module DATA_CACHE(
   output reg [1:0]  cmd_out = 2'b00,      // to next-level cache
   output reg [31:0] hit = 32'b0,    // to statistics module
   output reg [31:0] miss = 32'b0,   // to statistics module
-  output reg [31:0] reads = 32'b0 // to statistics module
+  output reg [31:0] reads = 32'b0, // to statistics module
   output reg [31:0] writes = 32'b0 // to statistics module
   );
   
