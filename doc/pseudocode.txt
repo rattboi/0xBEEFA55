@@ -21,7 +21,7 @@ On clock edge,
   read handler:
     reads++ for stats
     for all ways in the set indexed by the read command
-      check if the tag of the read address matches any tag in the tag array and is valid
+      see if the tag of the read address matches any tag in tag array and valid
       if yes, there's a hit.
       else miss
 
@@ -47,7 +47,7 @@ On clock edge,
   write handler:
     writes++ for stats
     for all ways in the set indexed by the write command
-      check if the tag of the written address matches any tag in the tag array and is valid
+      see if the tag of the write address matches any tag in tag array and valid
       if yes, there's a hit.
       else miss
 
@@ -101,7 +101,7 @@ On clock edge,
   instruction fetch handler:
     reads++ for stats
     for all ways in the set indexed by the read command
-      check if the tag of the read address matches any tag in the tag array and is valid
+      see if the tag of the read address matches any tag in tag array and valid
       if yes, there's a hit.
       else miss
 
