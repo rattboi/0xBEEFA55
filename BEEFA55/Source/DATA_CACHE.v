@@ -4,8 +4,8 @@
 // Final Project: 
 // 
 // File:    DATA_CACHE.v (Data Cache)
-// Authors: 
-// Description:
+// Authors: Andy Goetz, Bradon Kanyid, Eric Krause, and Kevin Riedl
+// Description: Simulates a read/write data cache.
 //
 //
 //
@@ -232,8 +232,8 @@ module DATA_CACHE(
 
         if (done == FALSE)
         begin
-          add_out                     = add_in[31:6]; // read in w/ intent to mod
-          cmd_out                     = RW_OUT;       // read in w/ intent to mod
+          add_out                   = add_in[31:6]; // read in w/ intent to mod
+          cmd_out                   = RW_OUT;       // read in w/ intent to mod
 
           // :: modify the data ::
 
@@ -261,7 +261,7 @@ module DATA_CACHE(
           if (Valid[set_cnt][3] | Valid[set_cnt][2] |
               Valid[set_cnt][1] | Valid[set_cnt][0] )
           begin
-$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h", 
+$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h",
               set_cnt[`SETBITS-1:0], 
               decode_lru(LRU[set_cnt]), 
               Valid[set_cnt][0], 
@@ -315,4 +315,4 @@ $display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h",
 endmodule
 
 
-//this is not a firefox cache
+//this is not a browser cache

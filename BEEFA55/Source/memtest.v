@@ -4,10 +4,8 @@
 // Final Project: 
 // 
 // File:    memtest.v (Test Bench)
-// Authors: 
-// Description:
-//
-// This module reads in a stimulus file provided by the
+// Authors: Andy Goetz, Bradon Kanyid, Eric Krause, and Kevin Riedl
+// Description: This module reads in a stimulus file provided by the
 // command line and passes commands to the cache.
 //
 ////////////////////////////////////////////////////////////////////////////////

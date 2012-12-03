@@ -3,9 +3,9 @@
 // Portland State University - Fall 2012 
 // Final Project: 
 // 
-// File:    INS_CACHE.v (Instruction Cache)
-// Authors: 
-// Description:
+// File:    INS_CACHE.v 
+// Authors: Andy Goetz, Bradon Kanyid, Eric Krause, and Kevin Riedl
+// Description: Simulates an instruction cache.
 //
 ////////////////////////////////////////////////////////////////////////////////
 `define SETS 1024*16

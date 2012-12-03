@@ -3,9 +3,9 @@
 // Portland State University - Fall 2012 
 // Final Project: 
 // 
-// File:    STATS.v (Statistics Module aka It's a series of counters)
-// Authors: 
-// Description:
+// File:    STATS.v
+// Authors: Andy Goetz, Bradon Kanyid, Eric Krause, and Kevin Riedl
+// Description: Generates statistics such as hit ratio about cache.
 //
 ////////////////////////////////////////////////////////////////////////////////
 module STATS(

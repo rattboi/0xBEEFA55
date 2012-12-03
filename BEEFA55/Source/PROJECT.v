@@ -3,9 +3,9 @@
 // Portland State University - Fall 2012 
 // Final Project: 
 // 
-// File:    PROJECT.v (Top-level wrapper module for project)
-// Authors: 
-// Description:
+// File:    PROJECT.v 
+// Authors: Andy Goetz, Bradon Kanyid, Eric Krause, and Kevin Riedl
+// Description: Top-level wrapper module for project
 //
 ////////////////////////////////////////////////////////////////////////////////
 module PROJECT(
