@@ -46,6 +46,7 @@
 \newcommand{\textfrc}[1]{{\frcseries#1}}
 \newcommand{\mathfrc}[1]{\text{\textfrc{#1}}}
 
+\setcounter{tocdepth}{2}
 
 \begin{titlepage}
  
@@ -101,9 +102,8 @@ Andy \textsc{Goetz}, Bradon \textsc{Kanyid}, Eric \textsc{Krause}, and Kevin \te
 
 \newpage
 
-\section{Specification}
 
-\centerimage{\includegraphics[width=5in]{585Final.png}}{Level 1 Diagram}{l1diag}
+\section{Overview}
 
 This project functionally simulates a split instruction/data L1 cache
 for a 32-bit processor in a system with multiple processors.  The
@@ -117,6 +117,19 @@ writes, hits, and misses are generated, as well as a hit percentage
 rate.  This simulation has a single-cycle interface between a
 processor and L1, and between L1 and L2.  All processor reads and
 writes are a single byte.
+
+\centerimage{\includegraphics[width=5in]{585Final.png}}{Level 1 Diagram}{l1diag}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Specification}
+
+
+
 
 The 32-bit addresses from the processor are broken down into the
 following fields:
