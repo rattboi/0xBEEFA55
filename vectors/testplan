@@ -1,0 +1,43 @@
+This directory contains test vectors for our simulated L1 cache. Due
+to the limited syntax of the trace file format, it is impossible to
+put comments about each test in its file. Therefore, the tests are
+described below:
+
+Cached_Instr_Reads.trace:
+        Multiple reads to the same instruction cache line
+
+Cached_Data_Reads.trace:
+        Multiple reads to the same data cache line
+
+Interleaved_Read_Write.trace:
+        Reads and Writes to the data cache
+
+Same_Set_Instr.trace:
+        Multiple reads from the same set in the instruction cache.
+
+Same_Set_Data.trace
+        Multiple reads from the same set in the data cache.
+
+Instr_Conflict.trace
+        Enough reads to the same instruction cache set to cause an eviction. 
+
+Data_Conflict.trace
+        Enough reads and writes to the same instruction cache set to cause an eviction
+
+Instr_Invalidate.trace
+        Multiple Reads Followed by Invalidate clears single line.
+
+Data_Invalidate.trace
+        Multiple Reads Followed by Invalidate clears single line. 
+
+Instr_Clear.trace
+        Read Followed by Clear empties data cache
+
+Data_Clear.trace
+        Read followed by Clear empties data cache
+
+Instr_Invalidate_Read.trace:
+        Read, Invalidate, Read uses cleared way as LRU
+
+Data_Invalidate_Read.trace:
+        Read, Invalidate, Read uses cleared way as LRU.
