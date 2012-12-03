@@ -69,7 +69,7 @@ module INS_CACHE(
       //    everything to 0.  Also initializes hit/miss/read counters.
       RESET:
       begin
-        hit   = 32'b0;
+        hit    = 32'b0;
         miss   = 32'b0;
         reads  = 32'b0;
         
@@ -143,11 +143,11 @@ module INS_CACHE(
             begin
               // set L_NEXT command/address
               add_out                      = add_in[31:6]; // perform read
-              cmd_out                     = READ_OUT;     // perform read
+              cmd_out                      = READ_OUT;     // perform read
 
               Tag[curr_index][way_cnt]     = curr_tag;
-              Valid[curr_index][way_cnt]  = TRUE;
-              LRU[curr_index]             = ~way_cnt[0]; 
+              Valid[curr_index][way_cnt]   = TRUE;
+              LRU[curr_index]              = ~way_cnt[0]; 
               done                         = TRUE;
             end
         end
@@ -162,7 +162,6 @@ module INS_CACHE(
             cmd_out                              = READ_OUT;     // perform read
 
             Tag[curr_index][LRU[curr_index]]    = curr_tag;  
-            Valid[curr_index][LRU[curr_index]]  = TRUE; 
             LRU[curr_index]                     = ~LRU[curr_index]; 
           end
       end
