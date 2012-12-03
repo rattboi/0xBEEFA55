@@ -112,7 +112,8 @@ Instr_Conflict.trace: (PASS)
  Hit Ratio = 0.0%
 
 Data_Conflict.trace (PASS)
-        Enough reads and writes to the same instruction cache set to cause an eviction
+        Enough reads and writes to the same instruction cache set to
+        cause an eviction
 
   ----------- DATA CACHE CONTENTS ----------
    INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]

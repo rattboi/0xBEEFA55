@@ -50,8 +50,9 @@ module test();
 
 	 // Check to make sure that a stimulus file was provided
 	 if ($value$plusargs("stimulus=%s", filename) == FALSE) 
-	 begin
-	   $display("ERROR: No Stimulus specified. Please specify +stimulus=<filename> to start.");
+	   begin        
+	   $display("ERROR: No Stimulus specified. Please specify\
+	   +stimulus=<filename> to start.");        
 	   $finish;
 	 end
 

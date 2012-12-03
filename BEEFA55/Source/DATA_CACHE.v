@@ -30,8 +30,8 @@ module DATA_CACHE(
   output reg [31:0] writes  = 32'b0  // to statistics module
   );
 
-  parameter TRUE 			= 1'b1;
-  parameter FALSE	   	= 1'b0;
+  parameter TRUE       = 1'b1;
+  parameter FALSE       = 1'b0;
   
   // data cache only reponds to following values of n
   parameter RESET       = 4'd8;
@@ -46,7 +46,7 @@ module DATA_CACHE(
   parameter RW_OUT      = 2'b10;  // Read with intent to write
   parameter NOP         = 2'b00;
 
-  //	CACHE ELEMENTS
+  //  CACHE ELEMENTS
   // LRU:     6 bits per set.
   reg [5:0]   LRU [`SETS-1:0];
   // Valid:   1 bit per way.  Encoding:  1 = way is valid, 0 = not valid
@@ -86,7 +86,7 @@ module DATA_CACHE(
         for (set_cnt = 0; set_cnt < `SETS; set_cnt = set_cnt + 1'b1)  
         begin
           LRU[set_cnt] = 6'b0; 
-			 // for all ways 
+       // for all ways 
           for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)  
           begin
             Valid [set_cnt][way_cnt] = FALSE; 
@@ -103,14 +103,14 @@ module DATA_CACHE(
         for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
         begin
           if (done == FALSE)
-		    begin
+        begin
             if (Tag[curr_index][way_cnt] == curr_tag)
             begin
               Valid[curr_index][way_cnt] = FALSE;
               done = TRUE;
             end
-	 		 end
-		  end
+        end
+      end
       end 
       
       READ:
@@ -122,15 +122,16 @@ module DATA_CACHE(
         for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
         begin
           if (done == FALSE)
-			 begin 
-            if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == TRUE)
+       begin 
+            if (Tag[curr_index][way_cnt] == curr_tag &&
+                Valid[curr_index][way_cnt] == TRUE)
             begin 
               lru_calc_in       = next_lru(LRU[curr_index], way_cnt[1:0]);
               LRU[curr_index]   = lru_calc_in;
               hit               = hit + 1'b1;
               done              = TRUE;
             end
-			 end
+       end
         end 
         
         // if there was no hit, increment the miss counter
@@ -143,32 +144,32 @@ module DATA_CACHE(
         for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
         begin
           if (done == FALSE)
-			 begin
+       begin
             if (Valid[curr_index][way_cnt] == FALSE)
             begin
               add_out                    = add_in[31:6];   // generate read
               cmd_out                    = READ_OUT;       // generate read
               
-              lru_calc_in                = next_lru(LRU[curr_index], way_cnt[1:0]);
+              lru_calc_in             = next_lru(LRU[curr_index], way_cnt[1:0]);
               LRU[curr_index]            = lru_calc_in;
               Tag[curr_index][way_cnt]   = curr_tag;
               Valid[curr_index][way_cnt] = TRUE;
               done                       = TRUE;
             end
-			 end
+       end
         end
         
         if (done == FALSE)
-		  begin
-			 add_out                        = add_in[31:6];  // generate read
-			 cmd_out                        = READ_OUT;      // generate read
-			 
-			 lru_way                        = decode_lru(LRU[curr_index]);            
-			 Tag[curr_index][lru_way]       = curr_tag;  
-			 Valid[curr_index][lru_way]     = TRUE;   
-			 lru_calc_in                    = next_lru(LRU[curr_index], lru_way);
-			 LRU[curr_index]                = lru_calc_in;
-		  end
+      begin
+       add_out                        = add_in[31:6];  // generate read
+       cmd_out                        = READ_OUT;      // generate read
+       
+       lru_way                        = decode_lru(LRU[curr_index]);
+       Tag[curr_index][lru_way]       = curr_tag;  
+       Valid[curr_index][lru_way]     = TRUE;   
+       lru_calc_in                    = next_lru(LRU[curr_index], lru_way);
+       LRU[curr_index]                = lru_calc_in;
+      end
       end
       
       WRITE:
@@ -181,8 +182,9 @@ module DATA_CACHE(
         for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
         begin
           if (done == FALSE)
-			 begin
-            if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == TRUE)
+       begin
+            if (Tag[curr_index][way_cnt] == curr_tag &&
+                Valid[curr_index][way_cnt] == TRUE)
             begin
               // :: already have data  ::
                
@@ -196,7 +198,7 @@ module DATA_CACHE(
               cmd_out           = WRITE_OUT;     // write out to L2
               done              = TRUE;
             end
-			 end
+       end
         end 
         
         // if there was no hit, increment the miss counter
@@ -209,42 +211,42 @@ module DATA_CACHE(
         for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
         begin
           if (done == FALSE)
-			 begin
+       begin
             if (Valid[curr_index][way_cnt] == FALSE)
             begin
-              add_out                     = add_in[31:6]; // read data w/ intent to mod
-              cmd_out                     = RW_OUT;       // read data w/ intent to mod
+              add_out = add_in[31:6]; // read data w/ intent to mod
+              cmd_out = RW_OUT;       // read data w/ intent to mod
               
               // :: modify the data ::
               
-              lru_calc_in                 = next_lru(LRU[curr_index], way_cnt[1:0]);
+              lru_calc_in             = next_lru(LRU[curr_index], way_cnt[1:0]);
               LRU[curr_index]             = lru_calc_in;
               Tag[curr_index][way_cnt]    = curr_tag;
               Valid[curr_index][way_cnt]  = TRUE;
               done                        = TRUE;
               
               add_out                     = add_in[31:6]; // write out to L2
-              cmd_out                     = WRITE_OUT;    // write out to L2       
+              cmd_out                     = WRITE_OUT;    // write out to L2
             end
-			 end
+       end
         end     
 
         if (done == FALSE)
-		  begin
-			 add_out                     = add_in[31:6]; // read in w/ intent to mod
-			 cmd_out                     = RW_OUT;       // read in w/ intent to mod
-			 
-			 // :: modify the data ::
+      begin
+       add_out                     = add_in[31:6]; // read in w/ intent to mod
+       cmd_out                     = RW_OUT;       // read in w/ intent to mod
+       
+       // :: modify the data ::
 
-			 lru_way                     = decode_lru(LRU[curr_index]);            
-			 Tag[curr_index][lru_way]    = curr_tag;  
-			 Valid[curr_index][lru_way]  = TRUE;   
-			 lru_calc_in                 = next_lru(LRU[curr_index], lru_way);
-			 LRU[curr_index]             = lru_calc_in;
-			 
-			 add_out                     = add_in[31:6]; // write out to L2
-			 cmd_out                     = WRITE_OUT;    // write out to L2
-		  end
+       lru_way                     = decode_lru(LRU[curr_index]);            
+       Tag[curr_index][lru_way]    = curr_tag;  
+       Valid[curr_index][lru_way]  = TRUE;   
+       lru_calc_in                 = next_lru(LRU[curr_index], lru_way);
+       LRU[curr_index]             = lru_calc_in;
+       
+       add_out                     = add_in[31:6]; // write out to L2
+       cmd_out                     = WRITE_OUT;    // write out to L2
+      end
       end
           
       // Print all of the contents of the Data Cache
@@ -252,14 +254,15 @@ module DATA_CACHE(
       begin
         // print header
         $display("----------- DATA CACHE CONTENTS ----------");
-        $display(" INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]");
+  $display(" INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]");
         // cycle through all of the ways within a set
         for (set_cnt = 0; set_cnt < `SETS; set_cnt = set_cnt+1)
         begin
           // print out the whole set if there are any valid lines
-          if (Valid[set_cnt][3] | Valid[set_cnt][2] | Valid[set_cnt][1] | Valid[set_cnt][0] )
+          if (Valid[set_cnt][3] | Valid[set_cnt][2] |
+              Valid[set_cnt][1] | Valid[set_cnt][0] )
           begin
-            $display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h", 
+$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h  |  %d  | %3h", 
               set_cnt[`SETBITS-1:0], 
               decode_lru(LRU[set_cnt]), 
               Valid[set_cnt][0], 
@@ -283,10 +286,10 @@ module DATA_CACHE(
   function [1:0] decode_lru;
   input [5:0]lru_bits;
     begin
-        if 		 (!(|lru_bits[5:3]))  decode_lru = 2'd0;
+        if      (!(|lru_bits[5:3]))  decode_lru = 2'd0;
         else if (!(|lru_bits[2:1]))  decode_lru = 2'd1;
-        else if (!  lru_bits[0]) 	 decode_lru = 2'd2;
-        else    		 		          decode_lru = 2'd3;	
+        else if (!  lru_bits[0])    decode_lru = 2'd2;
+        else                       decode_lru = 2'd3;
     end
   endfunction
   
