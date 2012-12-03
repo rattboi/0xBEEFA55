@@ -21,23 +21,130 @@ Same_Set_Data.trace
 Instr_Conflict.trace
         Enough reads to the same instruction cache set to cause an eviction. 
 
-Data_Conflict.trace
+Data_Conflict.trace (PASS)
         Enough reads and writes to the same instruction cache set to cause an eviction
 
-Instr_Invalidate.trace
+  ----------- DATA CACHE CONTENTS ----------
+   INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+   0000  |  1  |  1  | 500  |  1  | 200  |  1  | 300  |  1  | 400
+  ------- END OF DATA CACHE CONTENTS -------
+   STATISTICS: 
+   Hits   =          0
+   Miss   =          5
+   Reads  =          3
+   Writes =          2
+   Hit Ratio = 0.0%
+          
+Instr_Invalidate.trace (PASS)
         Multiple Reads Followed by Invalidate clears single line.
+        
+  ------- INSTRUCTION CACHE CONTENTS -------
+   Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]
+   0000  |  0  |  1  | 001  |  1  | 002
+  --- END OF INSTRUCTION CACHE CONTENTS ----
 
-Data_Invalidate.trace
+  ------- INSTRUCTION CACHE CONTENTS -------
+   Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]
+   0000  |  0  |  0  | xxx  |  1  | 002
+  --- END OF INSTRUCTION CACHE CONTENTS ----
+
+   STATISTICS: 
+   Hits   =          0
+   Miss   =          2
+   Reads  =          2
+   Writes =          0
+   Hit Ratio = 0.0%
+   
+Data_Invalidate.trace (PASS)
         Multiple Reads Followed by Invalidate clears single line. 
 
-Instr_Clear.trace
+  ----------- DATA CACHE CONTENTS ----------
+   INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+   0000  |  0  |  1  | 001  |  1  | 002  |  1  | 003  |  1  | 004
+  ------- END OF DATA CACHE CONTENTS -------
+
+  ----------- DATA CACHE CONTENTS ----------
+   INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+   0000  |  0  |  1  | 001  |  0  | xxx  |  1  | 003  |  1  | 004
+  ------- END OF DATA CACHE CONTENTS -------
+   STATISTICS: 
+   Hits   =          0
+   Miss   =          4
+   Reads  =          4
+   Writes =          0
+   Hit Ratio = 0.0%
+   
+Instr_Clear.trace (PASS)
         Read Followed by Clear empties data cache
+        
+  ------- INSTRUCTION CACHE CONTENTS -------
+   Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]
+   048c  |  1  |  1  | 001  |  0  | xxx
+  --- END OF INSTRUCTION CACHE CONTENTS ----
 
-Data_Clear.trace
+  ------- INSTRUCTION CACHE CONTENTS -------
+   Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]
+  --- END OF INSTRUCTION CACHE CONTENTS ----
+
+   STATISTICS: 
+   Hits   =          0
+   Miss   =          0
+   Reads  =          0
+   Writes =          0
+   Hit Ratio = 0.0%        
+
+Data_Clear.trace (PASS)
         Read followed by Clear empties data cache
+        
+  ----------- DATA CACHE CONTENTS ----------
+   INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+   048c  |  1  |  1  | 001  |  0  | xxx  |  0  | xxx  |  0  | xxx
+  ------- END OF DATA CACHE CONTENTS -------
 
-Instr_Invalidate_Read.trace:
+  ----------- DATA CACHE CONTENTS ----------
+   INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+  ------- END OF DATA CACHE CONTENTS -------
+   STATISTICS: 
+   Hits   =          0
+   Miss   =          0
+   Reads  =          0
+   Writes =          0
+   Hit Ratio = 0.0%        
+
+Instr_Invalidate_Read.trace: (PASS)
         Read, Invalidate, Read uses cleared way as LRU
+  ------- INSTRUCTION CACHE CONTENTS -------
+   Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]
+   0400  |  0  |  1  | 001  |  1  | 002
+  --- END OF INSTRUCTION CACHE CONTENTS ----
 
-Data_Invalidate_Read.trace:
+  ------- INSTRUCTION CACHE CONTENTS -------
+   Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]
+   0400  |  0  |  1  | 001  |  1  | 003
+  --- END OF INSTRUCTION CACHE CONTENTS ----
+
+   STATISTICS: 
+   Hits   =          0
+   Miss   =          3
+   Reads  =          3
+   Writes =          0
+   Hit Ratio = 0.0%
+
+Data_Invalidate_Read.trace: (PASS)
         Read, Invalidate, Read uses cleared way as LRU.
+        
+  ----------- DATA CACHE CONTENTS ----------
+   INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+   0400  |  0  |  1  | 001  |  1  | 002  |  1  | 003  |  1  | 004
+  ------- END OF DATA CACHE CONTENTS -------
+
+  ----------- DATA CACHE CONTENTS ----------
+   INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+   0400  |  0  |  1  | 001  |  1  | 002  |  1  | 005  |  1  | 004
+  ------- END OF DATA CACHE CONTENTS -------
+   STATISTICS: 
+   Hits   =          0
+   Miss   =          5
+   Reads  =          5
+   Writes =          0
+   Hit Ratio = 0.0%
