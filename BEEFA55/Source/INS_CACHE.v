@@ -118,7 +118,8 @@ module INS_CACHE(
 				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
 				begin
 					if (done == FALSE)
-						if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == TRUE)
+						if (Tag[curr_index][way_cnt] == curr_tag &&
+                Valid[curr_index][way_cnt] == TRUE)
 						begin
 							LRU[curr_index] = ~way_cnt[0];
 							hit 				    = hit + 1'b1;
@@ -127,7 +128,7 @@ module INS_CACHE(
 					else ;
 				end
 				
-				//	at this point, if done is still false, then the fetch was not a hit. 
+				//	at this point, if done is still false, then the fetch was not a hit.
 				if (done == FALSE)
 					miss = miss + 1'b1;
 				
@@ -142,7 +143,7 @@ module INS_CACHE(
 						begin
               // set L_NEXT command/address
 							add_out				              = add_in[31:6]; // perform read
-              cmd_out                     = READ_OUT;     // perform read                       
+              cmd_out                     = READ_OUT;     // perform read
 
 							Tag[curr_index][way_cnt] 	  = curr_tag;
 							Valid[curr_index][way_cnt]  = TRUE;
@@ -180,10 +181,12 @@ module INS_CACHE(
 						$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h", 
 							way_cnt[`SETBITS-1:0], 
 							LRU[way_cnt], 
-							Valid[way_cnt][0], 
-							Valid[way_cnt][0] ? Tag[way_cnt][0] : `TAGBITS'hX, // print X's if invalid
-							Valid[way_cnt][1], 
-							Valid[way_cnt][1] ? Tag[way_cnt][1] : `TAGBITS'hX  // print X's if invalid
+							Valid[way_cnt][0],
+              // print X's if invalid
+							Valid[way_cnt][0] ? Tag[way_cnt][0] : `TAGBITS'hX,
+							Valid[way_cnt][1],
+              // print X's if invalid
+							Valid[way_cnt][1] ? Tag[way_cnt][1] : `TAGBITS'hX  
 						); 
         	end
         end
