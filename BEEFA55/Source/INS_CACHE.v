@@ -15,16 +15,16 @@
 
 module INS_CACHE(
 	// INPUTS
-	input [3:0] n,			// from trace file
+	input [3:0]  n,			  // from trace file
 	input [31:0] add_in,	// from trace file
 	input clk,
   
 	// OUTPUTS
-	output reg [25:0] add_out = 32'bZ,	// to next-level cache
-	output reg [1:0]  cmd_out = 2'b00,			// to next-level cache
-	output reg [31:0] hit = 32'b0,		// to statistics module
-	output reg [31:0] miss = 32'b0,		// to statistics module
-	output reg [31:0] reads	= 32'b0	// to statistics module
+	output reg [25:0] add_out = 26'bZ,	// to next-level cache
+	output reg [1:0]  cmd_out = NOP,  	// to next-level cache
+	output reg [31:0] hit     = 32'b0,	// to statistics module
+	output reg [31:0] miss    = 32'b0,  // to statistics module
+	output reg [31:0] reads	  = 32'b0	  // to statistics module
   );
   
 	parameter TRUE 			= 1'b1;
@@ -38,8 +38,9 @@ module INS_CACHE(
 	
 	// instruction cache sends following commands to next-level cache
 	parameter READ_OUT		= 2'b01;
+	parameter NOP         = 2'b00;
 	
-//	CACHE ELEMENTS
+  // CACHE ELEMENTS
 	// LRU: 1 bit per set. Encoding:  1 = Way 1 is LRU.  0 = Way 0 is LRU
 	reg LRU [`SETS-1:0];
 	// Valid: 1 bit per way.  Encoding:  1 = way is valid, 0 = not valid
@@ -60,11 +61,12 @@ module INS_CACHE(
 	always @(posedge clk)
 	begin	
 		add_out = 26'bZ;	// always initialize address out to high-z
-		done	= FALSE;	// and set internal done signal to false
+    cmd_out = NOP;    // default to NOP, if a read happens, it will be updated
+		done	  = FALSE;	// and set internal done signal to false
 		
 		case(n)
 			// RESET: iterates through all elements in the cache and sets
-			// everything to 0.  Also initializes hit/miss/read counters.
+			//    everything to 0.  Also initializes hit/miss/read counters.
 			RESET:
 			begin
 				hit 	= 32'b0;
@@ -92,12 +94,16 @@ module INS_CACHE(
 			INVALIDATE:
 			begin
 				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
+        begin
 					if (!done)
+          begin
 						if (Tag[curr_index][way_cnt] == curr_tag)
 						begin
 							done                        = TRUE;
 							Valid[curr_index][way_cnt]  = FALSE;
 						end
+          end
+				end
 			end	
 			
 			
@@ -115,8 +121,8 @@ module INS_CACHE(
 						if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == TRUE)
 						begin
 							LRU[curr_index] = ~way_cnt[0];
-							done 				    = TRUE;
 							hit 				    = hit + 1'b1;
+							done 				    = TRUE;
 						end
 					else ;
 				end
@@ -134,12 +140,14 @@ module INS_CACHE(
 					if (done == FALSE)
 						if (Valid[curr_index][way_cnt] == FALSE)
 						begin
-							done 				                = TRUE;
+              // set L_NEXT command/address
 							add_out				              = add_in[31:6]; // perform read
               cmd_out                     = READ_OUT;     // perform read                       
+
 							Tag[curr_index][way_cnt] 	  = curr_tag;
 							Valid[curr_index][way_cnt]  = TRUE;
 							LRU[curr_index] 	          = ~way_cnt[0]; 
+							done 				                = TRUE;
 						end
 				end
 				
@@ -148,14 +156,16 @@ module INS_CACHE(
         //    in which to put the incoming read.  So evict the LRU
 				if (done == FALSE)
 					begin
+            // set L_NEXT command/address
 						add_out	                            = add_in[31:6]; // perform read
-							add_out				                    = add_in[31:6]; // perform read
+						cmd_out	                            = READ_OUT;     // perform read
+
 						Tag[curr_index][LRU[curr_index]]    = curr_tag;  
 						Valid[curr_index][LRU[curr_index]]  = TRUE; 
 						LRU[curr_index] 	                  = ~LRU[curr_index]; 
 					end
 			end
-			
+		
 			PRINT:
 			begin		
         // print header      
@@ -163,8 +173,10 @@ module INS_CACHE(
 				$display(" Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]");
         // cycle through all of the ways within a set
 				for (way_cnt = 0;	way_cnt < `SETS; way_cnt = way_cnt+1)
+				begin
           // print out the whole set if there are any valid lines
 					if (Valid[way_cnt][0] | Valid[way_cnt][1])
+          begin
 						$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h", 
 							way_cnt[`SETBITS-1:0], 
 							LRU[way_cnt], 
@@ -173,6 +185,8 @@ module INS_CACHE(
 							Valid[way_cnt][1], 
 							Valid[way_cnt][1] ? Tag[way_cnt][1] : `TAGBITS'hX  // print X's if invalid
 						); 
+        	end
+        end
 				$display("--- END OF INSTRUCTION CACHE CONTENTS ----\n");
 			end
 			
