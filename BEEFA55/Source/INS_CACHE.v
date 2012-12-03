@@ -60,88 +60,100 @@ module INS_CACHE(
 	always @(posedge clk)
 	begin	
 		add_out = 26'bZ;	// always initialize address out to high-z
-		done	= FALSE;		// and set internal done signal to false
+		done	= FALSE;	// and set internal done signal to false
 		
 		case(n)
-			// RESET: iterates through all elements in the cache and 
+			// RESET: iterates through all elements in the cache and sets
+			// everything to 0.  Also initializes hit/miss/read counters.
 			RESET:
 			begin
 				hit 	= 32'b0;
 				miss 	= 32'b0;
 				reads	= 32'b0;
 				
-				for (set_cnt = 0; set_cnt < `SETS; set_cnt = set_cnt + 1'b1) 	// for every set
+				// for every set... 
+				for (set_cnt = 0; set_cnt < `SETS; set_cnt = set_cnt + 1'b1) 
 				begin
-					LRU[set_cnt] = 1'b0;	
-					for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)	// for all ways
+					LRU[set_cnt] = 1'b0;	// set the LRU to 0
+					// for each way of set...
+					for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1) 
 					begin
-						Valid	[set_cnt][way_cnt]	= 1'b0;	
+						// clear valid and tag bits. 
+						Valid	[set_cnt][way_cnt]	= FALSE;	
 						Tag  	[set_cnt][way_cnt]	= `TAGBITS'b0;
 					end
 				end
 			end
 			
+			
+			// INVALIDATE: use address passed in with invalidate command as an 
+			//    index to a given line.  Then, invalidate the line for which the
+			//    stored tag equals the tag passed in add_in.
 			INVALIDATE:
 			begin
-				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt+1'b1)
+				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
 					if (!done)
 						if (Tag[curr_index][way_cnt] == curr_tag)
 						begin
-							done = 1'b1;
-							Valid[curr_index][way_cnt] = 1'b0;
+							done                        = TRUE;
+							Valid[curr_index][way_cnt]  = FALSE;
 						end
 			end	
 			
+			
 			INST_FETCH:
 			begin
-				reads = reads + 1'b1;
+				reads = reads + 1'b1;	// always increment read count
 				
-				//	look at all (both) ways.  if for either, the tags match
-				//	and the valid bit is set, this is a hit.  on a hit, the 
-				//  if(!done) will evaluate false and execution drops through.
-				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt+1'b1)
+				// First, look at both lines.  if for either, the tags match
+				//    and the line is valid, then the read was a hit.  done 
+				//	  is set to true, and execution will drop through the rest 
+				//    of the INST_FETCH routine.
+				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
 				begin
-					if (!done)
-						if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == 1'b1)
+					if (done == FALSE)
+						if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == TRUE)
 						begin
-							LRU[curr_index] 	= ~way_cnt[0]; // is this logic right? (Yes, I think it is, NOW --rattboi)
-							done 				= 1'b1;
-							hit 				= hit + 1'b1;
+							LRU[curr_index] = ~way_cnt[0];
+							done 				    = TRUE;
+							hit 				    = hit + 1'b1;
 						end
 					else ;
 				end
 				
-				//	if execution exits this loop and done still == 0, then 
-				// 	the ins. fetch was not a hit.  so increase miss.	
-				if (!done)
+				//	at this point, if done is still false, then the fetch was not a hit. 
+				if (done == FALSE)
 					miss = miss + 1'b1;
 				
-				// look at both ways.  If either is empty (valid == 0) then 
-				// do a read and and put it in the empty way.  If this happens,
-				// done is set true, and execution will drop out of the loop.
-				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt+1'b1)
+        // Next, look at both lines.  If either is empty then 
+        //    do a read and and put result in the empty line, then set
+        //    done to true, and execution will drop through the rest of 
+        //    the INST_FETCH routine. 
+				for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
 				begin
-					if (!done)
-						if (Valid[curr_index][way_cnt] == 1'b0)
+					if (done == FALSE)
+						if (Valid[curr_index][way_cnt] == FALSE)
 						begin
-							done 				= 1'b1;
-							add_out				= add_in[31:6]; // is this right?
-							Tag[curr_index][way_cnt] 	= curr_tag;
-							Valid[curr_index][way_cnt]= 1'b1;
-							LRU[curr_index] 	= ~way_cnt[0]; 
+							done 				                = TRUE;
+							add_out				              = add_in[31:6]; // perform read
+              cmd_out                     = READ_OUT;     // perform read                       
+							Tag[curr_index][way_cnt] 	  = curr_tag;
+							Valid[curr_index][way_cnt]  = TRUE;
+							LRU[curr_index] 	          = ~way_cnt[0]; 
 						end
 				end
 				
-				// reaching this point means an eviction is needed
-				// so evict the LRU
-				if (!done)
+// Reaching this point means an eviction is needed because the
+//    instruction fetch was a miss, and there was no empty line
+//    in which to put the incoming read.  So evict the LRU
+				if (done == FALSE)
 					begin
-						add_out	= add_in[31:6]; // is this right?
-						Tag[curr_index][LRU[curr_index]] = curr_tag;  
-						Valid[curr_index][LRU[curr_index]] = 1'b1; 
-						LRU[curr_index] 	= ~LRU[curr_index]; 
+						add_out	                            = add_in[31:6]; // perform read
+							add_out				                    = add_in[31:6]; // perform read
+						Tag[curr_index][LRU[curr_index]]    = curr_tag;  
+						Valid[curr_index][LRU[curr_index]]  = TRUE; 
+						LRU[curr_index] 	                  = ~LRU[curr_index]; 
 					end
-				
 			end
 			
 			PRINT:
