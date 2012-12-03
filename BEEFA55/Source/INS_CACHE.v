@@ -17,8 +17,8 @@ module INS_CACHE(
 	// INPUTS
 	input [3:0] n,			// from trace file
 	input [31:0] add_in,	// from trace file
-	
 	input clk,
+  
 	// OUTPUTS
 	output reg [25:0] add_out = 32'bZ,	// to next-level cache
 	output reg [1:0]  cmd_out = 2'b00,			// to next-level cache
@@ -31,10 +31,10 @@ module INS_CACHE(
 	parameter FALSE			= 1'b0;
 	
 	// instruction cache only reponds to following values of n:
-	parameter RESET 	 	= 4'd8;
+	parameter RESET 	 	  = 4'd8;
 	parameter INVALIDATE 	= 4'd3;
 	parameter INST_FETCH 	= 4'd2;
-	parameter PRINT			= 4'd9;
+	parameter PRINT			  = 4'd9;
 	
 	// instruction cache sends following commands to next-level cache
 	parameter READ_OUT		= 2'b01;
@@ -42,7 +42,7 @@ module INS_CACHE(
 //	CACHE ELEMENTS
 	// LRU: 1 bit per set. Encoding:  1 = Way 1 is LRU.  0 = Way 0 is LRU
 	reg LRU [`SETS-1:0];
-	// Valid: 1 bit per way.  Encoding:  1 = Location is valid, 0 = not valid
+	// Valid: 1 bit per way.  Encoding:  1 = way is valid, 0 = not valid
 	reg Valid [`SETS-1:0][`WAYS-1:0];
 	// Tag: Tag is of size TAGBITS.  One tag per way.
 	reg [`TAGBITS-1:0] Tag [`SETS-1:0][`WAYS-1:0];

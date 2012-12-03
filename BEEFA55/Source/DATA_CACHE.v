@@ -29,6 +29,8 @@ module DATA_CACHE(
   output reg [31:0] reads = 32'b0, // to statistics module
   output reg [31:0] writes = 32'b0 // to statistics module
   );
+  parameter TRUE 			= 1'b1;
+	parameter FALSE			= 1'b0;
   
   // data cache only reponds to following values of n
   parameter RESET     = 4'd8;
@@ -40,24 +42,23 @@ module DATA_CACHE(
   // data cache sends following commands to next-level cache
   parameter READ_OUT    = 2'b01;
   parameter WRITE_OUT   = 2'b10;
-  // Read with intent to write
-  parameter RW_OUT      = 2'b10;
+  parameter RW_OUT      = 2'b10;  // Read with intent to write
 
-  // instantiate cache elements
-  //  size          sets      ways
-  reg [5:0] LRU   [`SETS-1:0]       ;//  1=LRU is way 1.  0 = LRU way is 0
+  //	CACHE ELEMENTS
+	// LRU: 6 bits per set.
+  reg [5:0] LRU [`SETS-1:0];
+  // Valid: 1 bit per way.  Encoding:  1 = way is valid, 0 = not valid
   reg Valid [`SETS-1:0] [`WAYS-1:0];
+  // Tag: Tag is of size TAGBITS.  One tag per way.
   reg [11:0]      Tag   [`SETS-1:0] [`WAYS-1:0];
   
   // loop counters
   integer set_cnt,way_cnt;
    
   // internal
-  reg done = 1'b0;
-  reg [1:0]lru_way;
-  wire [5:0]new_lru;
-  reg [5:0]lru_calc_in;
-  reg go;
+  reg done = FALSE;
+  reg [1:0]lru_way;     // temp variable, holds output from decode_lru
+  reg [5:0]lru_calc_in; // temp variable, holds output from next_lru
   
   // assignments
   wire [11:0] curr_tag = add_in[31:20];
@@ -67,7 +68,8 @@ module DATA_CACHE(
   always @(posedge clk)
   begin 
     add_out = 26'bZ;
-    done  = 1'b0;
+    cmd_out = 2'b00;
+    done  = FALSE;
     
     case(n)
       RESET: 
@@ -78,12 +80,13 @@ module DATA_CACHE(
         miss  = 32'b0;
         reads = 32'b0;
         writes = 32'b0;
+        
         for (set_cnt = 0; set_cnt < `SETS; set_cnt = set_cnt + 1'b1)  // for every set
         begin
           LRU[set_cnt] = 6'b0;  
           for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)  // for all ways
           begin
-            Valid [set_cnt][way_cnt]  = 1'b0; 
+            Valid [set_cnt][way_cnt]  = FALSE; 
             Tag   [set_cnt][way_cnt]  = 24'b0;
           end
         end
@@ -98,8 +101,8 @@ module DATA_CACHE(
           if (!done)
             if (Tag[curr_index][way_cnt] == curr_tag)
             begin
-              done = 1'b1;
-              Valid[curr_index][way_cnt] = 1'b0;
+              done = TRUE;
+              Valid[curr_index][way_cnt] = FALSE;
             end
       end 
       
@@ -112,12 +115,11 @@ module DATA_CACHE(
         for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
         begin
           if (!done)
-            if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == 1'b1)
+            if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == TRUE)
             begin 
               lru_calc_in       = next_lru(LRU[curr_index], way_cnt[1:0]);
               LRU[curr_index]   = lru_calc_in;
-              done              = 1'b1;
-              cmd_out           = READ_OUT;
+              done              = TRUE;
               hit               = hit + 1'b1;
             end
         end 
@@ -132,27 +134,29 @@ module DATA_CACHE(
         for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
         begin
           if (!done)
-            if (Valid[curr_index][way_cnt] == 1'b0)
+            if (Valid[curr_index][way_cnt] == FALSE)
             begin
               add_out                    = add_in[31:6];   // generate read
               cmd_out                    = READ_OUT;       // generate read
-              lru_calc_in       = next_lru(LRU[curr_index], way_cnt[1:0]);
-              LRU[curr_index]   = lru_calc_in;
+              
+              lru_calc_in                = next_lru(LRU[curr_index], way_cnt[1:0]);
+              LRU[curr_index]            = lru_calc_in;
               Tag[curr_index][way_cnt]   = curr_tag;
-              Valid[curr_index][way_cnt] = 1'b1;
-              done                       = 1'b1;
+              Valid[curr_index][way_cnt] = TRUE;
+              done                       = TRUE;
             end
         end
         
         if (!done)
           begin
-            add_out                    = add_in[31:6];  // generate read
-            cmd_out                    = READ_OUT;      // generate read
-            lru_way                    = decode_lru(LRU[curr_index]);            
-            Tag[curr_index][lru_way]   = curr_tag;  
-            Valid[curr_index][lru_way] = 1'b1;   
-            lru_calc_in       = next_lru(LRU[curr_index], lru_way);
-            LRU[curr_index]   = lru_calc_in;
+            add_out                      = add_in[31:6];  // generate read
+            cmd_out                      = READ_OUT;      // generate read
+            
+            lru_way                      = decode_lru(LRU[curr_index]);            
+            Tag[curr_index][lru_way]     = curr_tag;  
+            Valid[curr_index][lru_way]   = TRUE;   
+            lru_calc_in                  = next_lru(LRU[curr_index], lru_way);
+            LRU[curr_index]              = lru_calc_in;
           end
       end
       
@@ -166,14 +170,19 @@ module DATA_CACHE(
         for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
         begin
           if (!done)
-            if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == 1'b1)
+            if (Tag[curr_index][way_cnt] == curr_tag && Valid[curr_index][way_cnt] == TRUE)
             begin
-              add_out         = add_in[31:6]; 
-              cmd_out         = WRITE_OUT;
+              // :: already have data  ::
+               
+              // :: modify the data ::
+              
               lru_calc_in       = next_lru(LRU[curr_index], way_cnt[1:0]);
               LRU[curr_index]   = lru_calc_in;
-              done            = 1'b1;
-              hit             = hit + 1'b1;
+              done              = TRUE;
+              hit               = hit + 1'b1;
+              
+              add_out           = add_in[31:6];  // write out to L2
+              cmd_out           = WRITE_OUT;     // write out to L2
             end
         end 
         
@@ -187,32 +196,39 @@ module DATA_CACHE(
         for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)
         begin
           if (!done)
-            if (Valid[curr_index][way_cnt] == 1'b0)
+            if (Valid[curr_index][way_cnt] == FALSE)
             begin
-              add_out                     = add_in[31:6];
-              cmd_out                     = RW_OUT;
-              lru_calc_in       = next_lru(LRU[curr_index], way_cnt[1:0]);
-              LRU[curr_index]   = lru_calc_in;
-              done                        = 1'b1;
+              add_out                     = add_in[31:6]; // read data w/ intent to mod
+              cmd_out                     = RW_OUT;       // read data w/ intent to mod
+              
+              // :: modify the data ::
+              
+              lru_calc_in                 = next_lru(LRU[curr_index], way_cnt[1:0]);
+              LRU[curr_index]             = lru_calc_in;
+              done                        = TRUE;
               Tag[curr_index][way_cnt]    = curr_tag;
-              Valid[curr_index][way_cnt]  = 1'b1;
-              add_out                     = add_in[31:6];
-              cmd_out                     = WRITE_OUT;              
+              Valid[curr_index][way_cnt]  = TRUE;
+              
+              add_out                     = add_in[31:6]; // write out to L2
+              cmd_out                     = WRITE_OUT;    // write out to L2       
             end
         end     
 
         if (!done)
           begin
-            add_out                     = add_in[31:6]; // read in with intent to write
-            cmd_out                     = RW_OUT;       // read in with intent to write
+            add_out                     = add_in[31:6]; // read in w/ intent to mod
+            cmd_out                     = RW_OUT;       // read in w/ intent to mod
+            
+            // :: modify the data ::
 
             lru_way                     = decode_lru(LRU[curr_index]);            
             Tag[curr_index][lru_way]    = curr_tag;  
-            Valid[curr_index][lru_way]  = 1'b1;   
+            Valid[curr_index][lru_way]  = TRUE;   
             lru_calc_in       = next_lru(LRU[curr_index], lru_way);
             LRU[curr_index]   = lru_calc_in;
-            add_out                     = add_in[31:6]; // write back out
-            cmd_out                     = WRITE_OUT;    // write back out
+            
+            add_out                     = add_in[31:6]; // write out to L2
+            cmd_out                     = WRITE_OUT;    // write out to L2
 
           end
       end
