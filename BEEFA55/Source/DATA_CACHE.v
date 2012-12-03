@@ -90,7 +90,7 @@ module DATA_CACHE(
           for (way_cnt = 0; way_cnt < `WAYS; way_cnt = way_cnt + 1'b1)  
           begin
             Valid [set_cnt][way_cnt] = FALSE; 
-            Tag   [set_cnt][way_cnt] = 24'b0;
+            Tag   [set_cnt][way_cnt] = 12'b0;
           end
         end
       end
