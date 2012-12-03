@@ -3,23 +3,113 @@ to the limited syntax of the trace file format, it is impossible to
 put comments about each test in its file. Therefore, the tests are
 described below:
 
-Cached_Instr_Reads.trace:
+Cached_Instr_Reads.trace: (PASS)
         Multiple reads to the same instruction cache line
 
-Cached_Data_Reads.trace:
+------- INSTRUCTION CACHE CONTENTS -------
+ Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]
+ 0000  |  1  |  1  | 000  |  0  | xxx
+--- END OF INSTRUCTION CACHE CONTENTS ----
+
+----------- DATA CACHE CONTENTS ----------
+ INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+------- END OF DATA CACHE CONTENTS -------
+ STATISTICS: 
+ Hits   =          3
+ Miss   =          1
+ Reads  =          4
+ Writes =          0
+ Hit Ratio = 75.0%
+
+Cached_Data_Reads.trace: (PASS)
         Multiple reads to the same data cache line
 
-Interleaved_Read_Write.trace:
+------- INSTRUCTION CACHE CONTENTS -------
+ Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]
+--- END OF INSTRUCTION CACHE CONTENTS ----
+
+----------- DATA CACHE CONTENTS ----------
+ INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+ 0000  |  1  |  1  | 000  |  0  | xxx  |  0  | xxx  |  0  | xxx
+------- END OF DATA CACHE CONTENTS -------
+ STATISTICS: 
+ Hits   =          3
+ Miss   =          1
+ Reads  =          4
+ Writes =          0
+ Hit Ratio = 75.0%
+
+Interleaved_Read_Write.trace: (PASS) 
         Reads and Writes to the data cache
 
-Same_Set_Instr.trace:
+------- INSTRUCTION CACHE CONTENTS -------
+ Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]
+--- END OF INSTRUCTION CACHE CONTENTS ----
+
+----------- DATA CACHE CONTENTS ----------
+ INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+ 0000  |  1  |  1  | 000  |  0  | xxx  |  0  | xxx  |  0  | xxx
+------- END OF DATA CACHE CONTENTS -------
+ STATISTICS: 
+ Hits   =          3
+ Miss   =          1
+ Reads  =          2
+ Writes =          2
+ Hit Ratio = 75.0%
+
+Same_Set_Instr.trace: (PASS)
         Multiple reads from the same set in the instruction cache.
 
-Same_Set_Data.trace
+------- INSTRUCTION CACHE CONTENTS -------
+ Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]
+ 0000  |  0  |  1  | 000  |  1  | 001
+--- END OF INSTRUCTION CACHE CONTENTS ----
+
+----------- DATA CACHE CONTENTS ----------
+ INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+------- END OF DATA CACHE CONTENTS -------
+ STATISTICS: 
+ Hits   =          0
+ Miss   =          2
+ Reads  =          2
+ Writes =          0
+ Hit Ratio = 0.0%
+
+Same_Set_Data.trace: (PASS)
         Multiple reads from the same set in the data cache.
 
-Instr_Conflict.trace
+------- INSTRUCTION CACHE CONTENTS -------
+ Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]
+--- END OF INSTRUCTION CACHE CONTENTS ----
+
+----------- DATA CACHE CONTENTS ----------
+ INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+ 0000  |  0  |  1  | 000  |  1  | 001  |  1  | 002  |  1  | 003
+------- END OF DATA CACHE CONTENTS -------
+ STATISTICS: 
+ Hits   =          0
+ Miss   =          4
+ Reads  =          2
+ Writes =          2
+ Hit Ratio = 0.0%
+
+Instr_Conflict.trace: (PASS)
         Enough reads to the same instruction cache set to cause an eviction. 
+
+------- INSTRUCTION CACHE CONTENTS -------
+ Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]
+ 0000  |  1  |  1  | 200  |  1  | 100
+--- END OF INSTRUCTION CACHE CONTENTS ----
+
+----------- DATA CACHE CONTENTS ----------
+ INDEX | LRU | V[0]|Tag[0]| V[1]|Tag[1]| V[2]|Tag[2]| V[3]|Tag[3]
+------- END OF DATA CACHE CONTENTS -------
+ STATISTICS: 
+ Hits   =          0
+ Miss   =          3
+ Reads  =          3
+ Writes =          0
+ Hit Ratio = 0.0%
 
 Data_Conflict.trace (PASS)
         Enough reads and writes to the same instruction cache set to cause an eviction
