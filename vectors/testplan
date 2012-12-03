@@ -3,47 +3,77 @@ to the limited syntax of the trace file format, it is impossible to
 put comments about each test in its file. Therefore, the tests are
 described below:
 
-Cached_Instr_Reads.trace:
-        Multiple reads to the same instruction cache line
+TITLE: Cached_Instr_Reads.trace
+SUMMARY: Data_Conflict reads to the same instruction cache line
+EXPECTED RESULTS: Way 0 of Index 0 of Instruction Cache is valid. No
+other ways are valid.
+HIT RATIO: 75%
 
-Cached_Data_Reads.trace:
-        Multiple reads to the same data cache line
+TITLE: Cached_Data_Reads.trace
+SUMMARY: Multiple reads to the same data cache line
+EXPECTED RESULTS: Way 0 of Index 0 of Data Cache is valid. No other
+ways are valid.
+HIT RATIO: 75%
 
+TITLE: Interleaved_Read_Write.trace
+SUMMARY: Reads and Writes to the data 
+EXPECTED RESULTS: Way 0 of Index 0 of Data Cache is valid. No other
+ways are valid.
+HIT RATIO: 75%
 
-Interleaved_Read_Write.trace:
-        Reads and Writes to the data cache
+TITLE: Same_Set_Instr.trace
+SUMMARY: Multiple reads from the same set in the instruction cache.
+EXPECTED RESULTS: Both ways of Index 0 are valid. 
+HIT RATIO: 0%
 
+TITLE: Same_Set_Data.trace
+SUMMARY: Multiple reads from the same set in the data cache.
+EXPECTED RESULTS: All four ways of index 0 are valid.
+HIT RATIO: 0%
 
-Same_Set_Instr.trace:
-        Multiple reads from the same set in the instruction cache.
-Same_Set_Data.trace:
-        Multiple reads from the same set in the data cache.
+TITLE: Instr_Conflict.trace
+SUMMARY: Enough reads to the same instruction cache set to cause an eviction. 
+EXPECTED RESULTS: Both ways of index 0 are valid. LRU bit is 1. Way 0
+                  has Tag 200 in it, Way 1 has 100 in it.
+HIT RATIO: 0%
 
-
-Instr_Conflict.trace:
-        Enough reads to the same instruction cache set to cause an eviction. 
-
-Data_Conflict.trace
-        Enough reads and writes to the same instruction cache set to cause an eviction
-
+TITLE: Data_Conflict.trace
+SUMMARY: Enough reads and writes to the same instruction cache set to
+         cause an eviction
+EXPECTED RESULTS: All ways of index 0 are valid. LRU way is 1. Way 0
+                  has 500 in it, Wa 1 has 200 in it, way 2 has 300 in
+                  it, and way 3 has 400 in it.
+HIT RATIO: 0%
           
-Instr_Invalidate.trace
-        Multiple Reads Followed by Invalidate clears single line.
-        
+TITLE: Instr_Invalidate.trace
+SUMMARY: Multiple Reads Followed by Invalidate clears single line.
+EXPECTED RESULTS: way 0 of index 0 is invalid, way 1 of index 0 is
+                  valid.
+HIT RATIO: 0%
    
-Data_Invalidate.trace
-        Multiple Reads Followed by Invalidate clears single line. 
-   
-Instr_Clear.trace
-        Read Followed by Clear empties data cache
-        
+TITLE: Data_Invalidate.trace
+SUMMARY: Multiple Reads Followed by Invalidate clears single line. 
+EXPECTED RESULTS:   
+HIT RATIO: 0%
 
-Data_Clear.trace
-        Read followed by Clear empties data cache
-        
+TITLE: Instr_Clear.trace
+SUMMARY: Read Followed by Clear empties data cache
+EXPECTED RESULTS: No ways in instruction cache are valid.
+HIT RATIO: 0%
 
-Instr_Invalidate_Read.trace:
+TITLE: Data_Clear.trace
+SUMMARY: Read followed by Clear empties data cache
+EXPECTED RESULTS: All ways of Data Cache are invalid.
+HIT RATIO: 0%
 
-Data_Invalidate_Read.trace:
-        Read, Invalidate, Read uses cleared way as LRU.
-        
+TITLE: Instr_Invalidate_Read.trace
+SUMMARY: Read, Invalidate, Read uses cleared way as LRU
+EXPECTED RESULTS: way 0 of index 400 has tag of 001. Way 1 of index
+                  400 has tag of 003.
+HIT RATIO: 0%
+
+TITLE: Data_Invalidate_Read.trace
+SUMMARY: Read, Invalidate, Read uses cleared way as LRU.
+EXPECTED RESULTS: Index 400 of data cache has tag 001 in way 0, tag
+                  002 in way 1, tag 005 in way 2, and tag 004 in way 3.
+HIT RATIO: 0%
