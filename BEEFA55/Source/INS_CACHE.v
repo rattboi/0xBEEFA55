@@ -143,9 +143,9 @@ module INS_CACHE(
 						end
 				end
 				
-// Reaching this point means an eviction is needed because the
-//    instruction fetch was a miss, and there was no empty line
-//    in which to put the incoming read.  So evict the LRU
+        // Reaching this point means an eviction is needed because the
+        //    instruction fetch was a miss, and there was no empty line
+        //    in which to put the incoming read.  So evict the LRU
 				if (done == FALSE)
 					begin
 						add_out	                            = add_in[31:6]; // perform read
@@ -157,18 +157,21 @@ module INS_CACHE(
 			end
 			
 			PRINT:
-			begin				
+			begin		
+        // print header      
 				$display("\n------- INSTRUCTION CACHE CONTENTS -------");
 				$display(" Index | LRU | V[0]|Tag[0]| V[1]|Tag[1]");
+        // cycle through all of the ways within a set
 				for (way_cnt = 0;	way_cnt < `SETS; way_cnt = way_cnt+1)
+          // print out the whole set if there are any valid lines
 					if (Valid[way_cnt][0] | Valid[way_cnt][1])
 						$display(" %4h  |  %d  |  %d  | %3h  |  %d  | %3h", 
 							way_cnt[`SETBITS-1:0], 
 							LRU[way_cnt], 
 							Valid[way_cnt][0], 
-							Valid[way_cnt][0] ? Tag[way_cnt][0] : `TAGBITS'hX, 
+							Valid[way_cnt][0] ? Tag[way_cnt][0] : `TAGBITS'hX, // print X's if invalid
 							Valid[way_cnt][1], 
-							Valid[way_cnt][1] ? Tag[way_cnt][1] : `TAGBITS'hX
+							Valid[way_cnt][1] ? Tag[way_cnt][1] : `TAGBITS'hX  // print X's if invalid
 						); 
 				$display("--- END OF INSTRUCTION CACHE CONTENTS ----\n");
 			end
