@@ -151,7 +151,7 @@ module DATA_CACHE(
             lru_way                    = decode_lru(LRU[curr_index]);            
             Tag[curr_index][lru_way]   = curr_tag;  
             Valid[curr_index][lru_way] = 1'b1;   
-            lru_calc_in       = next_lru(LRU[curr_index], way_cnt[1:0]);
+            lru_calc_in       = next_lru(LRU[curr_index], lru_way);
             LRU[curr_index]   = lru_calc_in;
           end
       end
@@ -209,7 +209,7 @@ module DATA_CACHE(
             lru_way                     = decode_lru(LRU[curr_index]);            
             Tag[curr_index][lru_way]    = curr_tag;  
             Valid[curr_index][lru_way]  = 1'b1;   
-            lru_calc_in       = next_lru(LRU[curr_index], way_cnt[1:0]);
+            lru_calc_in       = next_lru(LRU[curr_index], lru_way);
             LRU[curr_index]   = lru_calc_in;
             add_out                     = add_in[31:6]; // write back out
             cmd_out                     = WRITE_OUT;    // write back out
