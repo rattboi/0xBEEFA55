@@ -1,9 +1,14 @@
 module IC_test();
 
-	parameter RESET = 4'd8;
-	parameter INVALIDATE = 4'd3;
-	parameter INST_FETCH = 4'd2;
-	parameter PRINT	= 4'd9;
+
+localparam type ADDR = bit[31:0];
+localparam type WORD = bit[7:0];
+
+
+        parameter RESET = 4'd8;
+        parameter INVALIDATE = 4'd3;
+        parameter INST_FETCH = 4'd2;
+        parameter PRINT = 4'd9;
 
 
 reg [3:0] N;
