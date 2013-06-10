@@ -9,7 +9,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`include "cachepkg.sv"
+`include "cachepkg.pkg"
 
 //             from lower level cache    to higher level cache
 module cache( cacheinterface.slave bus , cacheinterface.master nextbus);

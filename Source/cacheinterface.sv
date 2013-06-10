@@ -2,7 +2,7 @@
 * cache interface to read and write to a generic cache
 */
 
-`include "cachepkg.sv"
+`include "cachepkg.pkg"
 
 interface cacheinterface
    #( parameter type WORD = logic[7:0], 
@@ -18,21 +18,24 @@ interface cacheinterface
     // timing signals - 4 phase signals for variable cache latency
     logic request; 
     logic valid;
+    logic evict;
 
     modport master(
         output operation, 
-        output addr, 
+        inout  addr, 
         inout  data, 
         output request,
         input  valid,
+        input  evict,
         input  clock);
 
     modport slave (
         input  operation, 
-        input  addr, 
+        inout  addr, 
         inout  data,
         input  request,
         output valid,
+        output evict,
         input  clock);
 
 endinterface
