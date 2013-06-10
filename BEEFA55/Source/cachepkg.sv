@@ -14,9 +14,9 @@
 
 package cachepkg;
 
-typedef bit enum { FALSE, TRUE } bool_t;
+typedef enum bit { FALSE, TRUE } bool_t;
 
-typedef bit enum { INVALID, VALID } valid_t;
+typedef enum bit { INVALID, VALID } valid_t;
             
 typedef enum { RESET,
                INVALIDATE,
@@ -31,4 +31,5 @@ typedef enum { READ_OUT,
 
 
 endpackage
+
 `endif

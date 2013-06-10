@@ -9,15 +9,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-`include "cachePkg.sv"
+`include "cachepkg.sv"
 
 module cache( cacheinterface.slave bus );
 
-  import cachePkg::*;
+  import cachepkg::*;
 
   parameter SETS = 16384;
   parameter WAYS = 2;
-  parameter LINEITEMS = 64
+  parameter LINEITEMS = 64;
 
   localparam SETBITS  = $clog2(SETS);
   localparam WAYBITS  = $clog2(WAYS);
@@ -26,14 +26,14 @@ module cache( cacheinterface.slave bus );
   localparam WORDBITS = $clog2($bits(bus.WORD));
   localparam TAGBITS  = ADDRBITS - SETBITS - LINEBITS - WORDBITS;
 
-  typedef struct {
+  typedef struct packed{
     valid_t valid;
     bit [WAYBITS-1:0]lru;
     bit [TAGBITS-1:0] tag;
-    bit [WORDBITS-1:0] data[LINEITEMS-1:0];
+    bit [WORDBITS-1:0] [LINEITEMS-1:0] data;
   } line_t;
 
-  typedef struct {
+  typedef struct packed {
       line_t [WAYS-1:0] way;
   } set_t;
 

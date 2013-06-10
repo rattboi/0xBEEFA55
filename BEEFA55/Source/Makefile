@@ -1,5 +1,5 @@
 
-src_v=$(wildcard *.v)
+#src_v=$(wildcard *.v)
 src_sv=$(wildcard *.sv)
 
 all:
