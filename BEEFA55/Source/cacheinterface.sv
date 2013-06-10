@@ -7,19 +7,17 @@
 interface cacheinterface
    #( parameter type WORD = logic[7:0], 
        parameter type ADDRSPACE = logic[31:0])
-    (clock);
+    (input clock);
 
-    inst_t operation,
-    ADDRSPACE addr,
-    WORD data,
+    import cachepkg::*;
+
+    inst_t operation;
+    ADDRSPACE addr;
+    WORD data;
 
     // timing signals - 4 phase signals for variable cache latency
     logic request; 
     logic valid;
-
-    logic clock;
-
-    import cachepkg::*;
 
     modport master(
         output operation, 
