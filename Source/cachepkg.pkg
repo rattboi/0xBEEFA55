@@ -23,7 +23,7 @@ typedef enum { RESET,
                READ,
                WRITE
                NOP,
-               READMOD } inst_t;
+               RFO } inst_t;
 
 endpackage
 
