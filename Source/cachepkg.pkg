@@ -17,18 +17,13 @@ package cachepkg;
 typedef enum bit { FALSE, TRUE } bool_t;
 
 typedef enum bit { INVALID, VALID } valid_t;
-            
+
 typedef enum { RESET,
                INVALIDATE,
                READ,
-               WRITE    } inst_t;
-
-typedef enum { READ_OUT,
-               WRITE_OUT,
-               RW_OUT,
-               NOP      } output_t;
-
-
+               WRITE
+               NOP,
+               READMOD } inst_t;
 
 endpackage
 
