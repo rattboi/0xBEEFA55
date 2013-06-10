@@ -5,20 +5,37 @@
 `include "cachepkg.sv"
 
 interface cacheinterface
-#( parameter type WORD = logic[7:0], 
-   parameter type ADDRSPACE = logic[31:0],
-   parameter cas_latency = 1
-)
-(
+   #( parameter type WORD = logic[7:0], 
+       parameter type ADDRSPACE = logic[31:0])
+    (clock);
+
     inst_t operation,
     ADDRSPACE addr,
     WORD data,
-    logic clock
-);
+
+    // timing signals - 4 phase signals for variable cache latency
+    logic request; 
+    logic valid;
+
+    logic clock;
 
     import cachepkg::*;
 
-    modport master(output operation, output addr, inout data, input clock);
-    modport slave (input  operation, input  addr, inout data, input clock);
+    modport master(
+        output operation, 
+        output addr, 
+        inout  data, 
+        output request,
+        input  valid,
+        input  clock);
+
+    modport slave (
+        input  operation, 
+        input  addr, 
+        inout  data,
+        input  request,
+        output valid,
+        input  clock);
 
 endinterface
+

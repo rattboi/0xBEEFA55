@@ -11,7 +11,8 @@
 
 `include "cachepkg.sv"
 
-module cache( cacheinterface.slave bus );
+//             from lower level cache    to higher level cache
+module cache( cacheinterface.slave bus , cacheinterface.master nextbus);
 
   import cachepkg::*;
 
