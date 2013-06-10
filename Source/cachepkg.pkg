@@ -21,7 +21,7 @@ typedef enum bit { INVALID, VALID } valid_t;
 typedef enum { RESET,
                INVALIDATE,
                READ,
-               WRITE
+               WRITE,
                NOP,
                READMOD } inst_t;
 

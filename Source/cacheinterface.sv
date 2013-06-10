@@ -2,7 +2,7 @@
 * cache interface to read and write to a generic cache
 */
 
-`include "cachepkg.sv"
+`include "cachepkg.pkg"
 
 interface cacheinterface
    #( parameter type WORD = logic[7:0], 
