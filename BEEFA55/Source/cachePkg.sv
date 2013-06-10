@@ -1,3 +1,14 @@
+////////////////////////////////////////////////////////////////////////////////
+// ECE 510: SystemVerilog
+// Portland State University - Spring 2013
+// Final Project:
+//
+// File:    cachePkg.sv
+// Authors: Eric Krause, Bradon Kanyid, Tyler Tricker
+// Description: it is a package
+//
+////////////////////////////////////////////////////////////////////////////////
+
 `ifndef cachePkg__
 `define cackePkg__
 
@@ -9,7 +20,6 @@ parameter FALSE     = 1'b0;
 
 typedef enum { RESET,
                INVALIDATE,
-               INST_FETCH,
                READ,
                WRITE    } inst_t;
 
