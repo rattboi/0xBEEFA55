@@ -12,7 +12,7 @@
 `ifndef cachePkg__
 `define cackePkg__
 
-package cachePkg;
+package cachepkg;
 
 typedef bit enum { FALSE, TRUE } bool_t;
 
