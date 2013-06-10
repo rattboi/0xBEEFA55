@@ -48,7 +48,7 @@ module cache( cacheinterface.slave bus );
 
   always @(posedge bus.clock)
   begin
-      add_out   = 'z;  //'// always initialize address out to high-z
+      addr = 'z;  //'// always initialize address out to high-z
       operation = NOP;    // default to NOP, if a read happens, it will be updated
       done      = FALSE;  // and set internal done signal to false
 
