@@ -13,35 +13,38 @@ module testbench();
 
     import cachepkg::*;
 
-    clocking cb
+    bit clock = 0;
+    initial forever #10 clock++;
+
+    clocking cb @(posedge clock);
+        default input #2ps output #1ps;
+    endclocking
 
     // testing parameters
     localparam type WORD      = logic[7:0];
     localparam type ADDRSPACE = logic[31:0];
 
     // from cpu
-    cacheinterface datainf 
-       #(.WORD(WORD), .ADDRSPACE(ADDRSPACE)
-        (clock);
+    cacheinterface #(.WORD(WORD), .ADDRSPACE(ADDRSPACE)
+        datainf (clock);
 
-    cacheinterface data_next 
-       #(.WORD(WORD), .ADDRSPACE(ADDRSPACE))
-        (clock);
+    cacheinterface #(.WORD(WORD), .ADDRSPACE(ADDRSPACE)) 
+        data_next (clock);
 
-    cacheinterface instructioninf 
-       #(.WORD(WORD), .ADDRSPACE(ADDRSPACE))
-        (clock);
+    cacheinterface #(.WORD(WORD), .ADDRSPACE(ADDRSPACE))
+        instructioninf (clock);
 
-    cacheinterface instruction_next
-       #(.WORD(WORD), .ADDRSPACE(ADDRSPACE))
-        (clock);
+    cacheinterface #(.WORD(WORD), .ADDRSPACE(ADDRSPACE))
+        instruction_next (clock);
 
     // program driving the test simulation data
-    // driver dr(datainf, instructioninf);
+    //  driver(datainf, instructioninf);
 
     // checker modules
     //bind data_cache        cachechecker chkdata(); 
     //bind instruction_cache cachechecker chkinstr(); 
+
+    // monitor modules - counts statistics on cache hits and evictions
 
 
     cache data_cache(bus.slave);
