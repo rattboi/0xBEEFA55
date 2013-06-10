@@ -27,7 +27,7 @@ module cache( cacheinterface.slave bus );
   localparam TAGBITS  = ADDRBITS - SETBITS - LINEBITS - WORDBITS;
 
   typedef struct {
-      bit valid;
+      valid_t valid;
       bit [WAYBITS-1:0]lru;
       bit [TAGBITS-1:0] tag;
       bit [WORDBITS-1:0] data[LINEITEMS-1:0];
@@ -40,7 +40,7 @@ module cache( cacheinterface.slave bus );
   set_t [SETS-1:0] set;
 
   // internal
-  reg done = 1'b0;
+  bool_t done = FALSE;
 
   // assignments
   alias curr_tag   = bus.addr[(ADDRBITS-1)-:TAGBITS]; // 32 - 3(tag)-14(line)

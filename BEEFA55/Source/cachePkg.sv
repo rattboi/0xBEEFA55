@@ -14,12 +14,10 @@
 
 package cachePkg;
 
-parameter TRUE      = 1'b1;
-parameter FALSE     = 1'b0;
+typedef bit enum { FALSE, TRUE } bool_t;
 
-parameter VALID     = 1'b1;
-parameter INVALID   = 1'b0;
-
+typedef bit enum { INVALID, VALID } valid_t;
+            
 typedef enum { RESET,
                INVALIDATE,
                READ,
