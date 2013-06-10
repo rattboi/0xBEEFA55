@@ -9,7 +9,7 @@ interface cacheinterface(
     clock
 );
 
-    import cachepkg::*;
+    import cachePkg::*;
 
     parameter type WORD      = bit[7:0];
     parameter type ADDRSPACE = bit[31:0];
