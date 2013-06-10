@@ -53,10 +53,9 @@ module cache( cacheinterface.slave bus );
       done      = FALSE;  // and set internal done signal to false
 
       case(bus.operation)
-        RESET: // invalidate everything in the cache
-          for (int i = 0; i < SETS; i++)
-            for (int j = 0; j < WAYS; j++)
-              set[i].way[j].valid = INVALID;
+
+        // invalidate everything in the cache
+        RESET: invalidateAll();
 
         // INVALIDATE: use address passed in with invalidate command as an
         //    index to a given line.  Then, invalidate the line for which the
@@ -133,5 +132,11 @@ module cache( cacheinterface.slave bus );
           default: ;  // commands this module doesn't respond to
         endcase
   end
+
+task invalidateAll();
+  for (int i = 0; i < SETS; i++)
+    for (int j = 0; j < WAYS; j++)
+      set[i].way[j].valid = INVALID;
+endtask
 
 endmodule
