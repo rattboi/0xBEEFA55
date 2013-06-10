@@ -20,16 +20,17 @@ module cache( cacheinterface.slave bus );
   parameter LINEITEMS = 64
 
   localparam SETBITS  = $clog2(SETS);
+  localparam WAYBITS  = $clog2(WAYS);
   localparam LINEBITS = LINEITEMS * $bits(bus.WORD);
   localparam ADDRBITS = $bits(bus.ADDRSPACE);
   localparam WORDBITS = $clog2($bits(bus.WORD));
   localparam TAGBITS  = ADDRBITS - SETBITS - LINEBITS - WORDBITS;
 
   typedef struct {
-      bit [$clog2(WAYS):0]lru;
       bit valid;
+      bit [WAYBITS-1:0]lru;
       bit [TAGBITS-1:0] tag;
-      bit [$bits(bus.WORD)-1:0] data[LINEITEMS-1:0];
+      bit [WORDBITS-1:0] data[LINEITEMS-1:0];
   } line_t;
 
   typedef struct {
@@ -45,7 +46,7 @@ module cache( cacheinterface.slave bus );
   alias curr_tag   = bus.addr[(ADDRBITS-1)-:TAGBITS]; // 32 - 3(tag)-14(line)
   alias curr_index = bus.addr[(WORDBITS+LINEBITS):WORDBITS];
 
-  always @(posedge clk)
+  always @(posedge bus.clock)
   begin
       add_out   = 'z;  //'// always initialize address out to high-z
       operation = NOP;    // default to NOP, if a read happens, it will be updated
