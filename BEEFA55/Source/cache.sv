@@ -27,14 +27,14 @@ module cache( cacheinterface.slave bus );
   localparam TAGBITS  = ADDRBITS - SETBITS - LINEBITS - WORDBITS;
 
   typedef struct {
-      valid_t valid;
-      bit [WAYBITS-1:0]lru;
-      bit [TAGBITS-1:0] tag;
-      bit [WORDBITS-1:0] data[LINEITEMS-1:0];
+    valid_t valid;
+    bit [WAYBITS-1:0]lru;
+    bit [TAGBITS-1:0] tag;
+    bit [WORDBITS-1:0] data[LINEITEMS-1:0];
   } line_t;
 
   typedef struct {
-      line_t [WAYS] way;
+      line_t [WAYS-1:0] way;
   } set_t;
 
   set_t [SETS-1:0] set;
