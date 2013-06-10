@@ -18,21 +18,24 @@ interface cacheinterface
     // timing signals - 4 phase signals for variable cache latency
     logic request; 
     logic valid;
+    logic evict;
 
     modport master(
         output operation, 
-        output addr, 
+        inout  addr, 
         inout  data, 
         output request,
         input  valid,
+        input  evict,
         input  clock);
 
     modport slave (
         input  operation, 
-        input  addr, 
+        inout  addr, 
         inout  data,
         input  request,
         output valid,
+        output evict,
         input  clock);
 
 endinterface
