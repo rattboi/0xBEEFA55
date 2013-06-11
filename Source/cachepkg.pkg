@@ -35,13 +35,6 @@ typedef enum { RESET,
                GET_NEXT,
                RW } state_t;
 
-automatic task next_st(input state_t current_st, output state_t next_st);
-  int curr_way;
-
-
-
-endtask
-
 // returns true if the tag is found in a set
 automatic bool_t function exists(input line_t set, input bit [TAGBITS-1:0] tag);
 
