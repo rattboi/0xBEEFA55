@@ -5,15 +5,15 @@
 `include "cachepkg.pkg"
 
 interface cacheinterface
-   #( parameter type WORD = logic[7:0], 
-       parameter type ADDRSPACE = logic[31:0])
+   #( parameter DATAWIDTH = 8, 
+       parameter ADDRESSWIDTH= 32)
     (input clock);
 
     import cachepkg::*;
 
     inst_t operation;
-    ADDRSPACE addr;
-    WORD data;
+    wire[ADDRESSWIDTH-1:0] addr;
+    wire[DATAWIDTH-1:0] data;
 
     // timing signals - 4 phase signals for variable cache latency
     logic request; 
