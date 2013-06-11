@@ -15,6 +15,7 @@ interface cacheinterface
     inst_t operation;
     wire[ADDRESSWIDTH-1:0] addr;
     wire[DATAWIDTH-1:0] data;
+    wire reset;
 
     // timing signals - 4 phase signals for variable cache latency
     logic request;
@@ -28,7 +29,7 @@ interface cacheinterface
         output request,
         input  valid,
         input  evict,
-        input  clock
+        input  clock,
         input  reset);
 
     modport slave (
