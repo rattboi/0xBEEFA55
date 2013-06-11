@@ -21,24 +21,24 @@ module testbench();
     endclocking
 
     // testing parameters
-    localparam type WORD      = logic[7:0];
-    localparam type ADDRSPACE = logic[31:0];
+    localparam DATAWIDTH    = 32;
+    localparam ADDRESSWIDTH = 32;
 
     // from cpu
-    cacheinterface #(.WORD(WORD), .ADDRSPACE(ADDRSPACE))
+    cacheinterface #(.DATAWIDTH(DATAWIDTH), .ADDRESSWIDTH(ADDRESSWIDTH))
         datainf (clock);
 
-    cacheinterface #(.WORD(WORD), .ADDRSPACE(ADDRSPACE)) 
+    cacheinterface #(.DATAWIDTH(DATAWIDTH), .ADDRESSWIDTH(ADDRESSWIDTH)) 
         data_next (clock);
 
-    cacheinterface #(.WORD(WORD), .ADDRSPACE(ADDRSPACE))
+    cacheinterface #(.DATAWIDTH(DATAWIDTH), .ADDRESSWIDTH(ADDRESSWIDTH))
         instructioninf (clock);
 
-    cacheinterface #(.WORD(WORD), .ADDRSPACE(ADDRSPACE))
+    cacheinterface #(.DATAWIDTH(DATAWIDTH), .ADDRESSWIDTH(ADDRESSWIDTH))
         instruction_next (clock);
 
     // program driving the test simulation data
-    tracedriver(datainf, data_next, instructioninf, instruction_next);
+    tracedriver td(datainf, data_next, instructioninf, instruction_next);
 
     // checker modules
     //bind data_cache        cachechecker chkdata(); 
@@ -47,8 +47,8 @@ module testbench();
     // monitor modules - counts statistics on cache hits and evictions
 
 
-    cache data_cache(bus.slave);
-    cache instruction_cache(bus.slave);
+    // cache data_cache(bus.slave, bus.master);
+    // cache instruction_cache(bus.slave, bus.master);
 
 
 endmodule
