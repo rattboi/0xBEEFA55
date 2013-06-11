@@ -44,6 +44,19 @@ program tracedriver(
 
      import tracetools::*;
 
+     cachepkg::inst_t dataop;
+     logic [31:0] addr;
+     logic [31:0] datalines;
+
+     assign data.operation = dataop;
+     assign data.addr      = addr;
+     assign instruction.operation = dataop;
+     assign instruction.addr = addr;
+
+     assign instruction.d  = datalines;
+     assign data.d         = datalines;
+     
+
      enum { READ       = 0,
             WRITE      = 1,
             INST_FETCH = 2,
@@ -51,66 +64,63 @@ program tracedriver(
             RESET      = 8, 
             PRINT      = 9} nub;
 
-     task automatic trans(
-         int    address, 
-         cachepkg::inst_t operation,
-         ref valid, 
-         ref int addr, 
-         ref int data);
-
-         @(posedge data.clock)
-         data.operation = operation;
-         data.addr      = address;
-
-         if(operation == WRITE)
-             data.d         = 'hDEADBEEF; 
-
-         wait(data.valid);
-         data.operation = cachepkg::IDLE;
-         data.addr      = 'z;
-         data.d         = 'z;
-     endtask
-
      task automatic execute_tracefile(integer filehandle);
          traceline_t line;
 
          while(!$feof(filehandle)) begin
              getparsedline(line, filehandle);
 
+             @(posedge data.clock)
              unique case(line.operation)
-                 READ:       trans(line.address, 
-                                   cachepkg::READ, 
-                                   data.valid, 
-                                   data.addess, 
-                                   data.d); 
+                 READ: begin
+                     data.operation = cachepkg::READ;
+                     data.addr      = line.address;
+                     data.request   = '1;
+                 end
 
-                 WRITE:       trans(line.address, 
-                                   cachepkg::WRITE, 
-                                   data.valid, 
-                                   data.addess, 
-                                   data.d); 
+                 WRITE: begin
+                     data.operation = cachepkg::WRITE;
+                     data.addr      = line.address;
+                     data.request   = '1;
+                     data.d         = 'hDEADBEEF;
+                 end
+                 
+                 INST_FETCH: begin
+                     data.operation = cachepkg::WRITE;
+                     data.addr      = line.address;
+                     data.request   = '1;
+                 end
 
-                 INST_FETCH:       trans(line.address, 
-                                   cachepkg::READ, 
-                                   instructon.valid, 
-                                   instruction.addess, 
-                                   instruction.d); 
+                 INVALIDATE: begin
+                     dataNL.evict            = '1;
+                     dataNL.addr             = line.address;
+                     instructionNL.evict     = '1;
+                     instructionNL.addr      = line.address;
+                 end
 
-                 INVALIDATE:       trans(line.address, 
-                                   cachepkg::INVALIDATE, 
-                                   instructon.valid, 
-                                   instruction.addess, 
-                                   instruction.d); 
+                 RESET: begin
+                     data.operation         = cachepkg::RESET;
+                     data.request           = '1;
+                     instruction.operation  = cachepkg::RESET;
+                     instruction.request    = '1;
+                 end
 
-
-                 INVALIDATE: invalidate(line.address, dataNL);
-
-                 RESET:      reset(instruction, data);
-                 PRINT:      display("magic print function %d", line.operation);
-
-                 default: $warning("unknown operation");
+                 PRINT:      $display("magic print function %d", line.operation);
              endcase
-        end
+
+             unique case(line.operation)
+                 READ, WRITE, INST_FETCH: begin
+                     wait(data.valid);
+                     data.operation = cachepkg::NOP;
+                     data.request   = '0;
+                     data.addr      = 'z;
+                     data.d         = 'z;
+                 end
+
+                 INVALIDATE:
+                     $display("display");
+             endcase
+         end
      endtask
 
      string trace_file_name = "";
