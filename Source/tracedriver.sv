@@ -25,11 +25,12 @@ package tracetools;
 
      task automatic getparsedline(
          output traceline_t line, 
-         input filehandle 
+         input integer filehandle 
      );
          int parsed = 0;
          parsed = $fscanf(filehandle, "%d %d", line.operation, line.address); 
-         assert(line.operation != 9 && parsed < 2) else $warning("invalid line");
+         assert(parsed <= 2) 
+             else $warning("invalid command, parsed=%d %d", parsed, line.operation);
      endtask
 
 
@@ -43,11 +44,26 @@ program tracedriver(
 
      import tracetools::*;
 
+     enum { INST_FETCH = 2,
+            INVALIDATE = 3, 
+            RESET      = 8, 
+            PRINT      = 9} nub;
+
      task automatic execute_tracefile(integer filehandle);
+         traceline_t line;
+
          while(!$feof(filehandle)) begin
-         ; // main loop
-         $stop;
-         end
+             getparsedline(line, filehandle);
+
+             unique case(line.operation)
+                 INST_FETCH: $display("%d", line.operation);
+                 INVALIDATE: $display("%d", line.operation);
+                 RESET:      $display("%d", line.operation);
+                 PRINT:      $display("%d", line.operation);
+
+                 default: $warning("unknown operation");
+             endcase
+        end
      endtask
 
      string trace_file_name = "";
@@ -65,8 +81,9 @@ program tracedriver(
          while(!$feof(filelist)) begin
               opentrace(current_trace_handle, trace_file_name );
               execute_tracefile(current_trace_handle);
-              bytesread = $fgets(trace_file_name, filelist);
               $fclose(current_trace_handle);
+              bytesread       = $fgets(trace_file_name, filelist);
+              trace_file_name = trace_file_name.substr(0, trace_file_name.len()-2);
          end
          $fclose(filelist);
      end
