@@ -13,8 +13,8 @@ interface cacheinterface
     import cachepkg::*;
 
     inst_t operation;
-    wire[ADDRESSWIDTH-1:0] addr;
-    wire[DATAWIDTH-1:0] d;
+    tri [ADDRESSWIDTH-1:0] addr;
+    tri [DATAWIDTH-1:0] d;
 
     input clock;
     input reset;
