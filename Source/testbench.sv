@@ -25,7 +25,7 @@ module testbench();
     localparam type ADDRSPACE = logic[31:0];
 
     // from cpu
-    cacheinterface #(.WORD(WORD), .ADDRSPACE(ADDRSPACE)
+    cacheinterface #(.WORD(WORD), .ADDRSPACE(ADDRSPACE))
         datainf (clock);
 
     cacheinterface #(.WORD(WORD), .ADDRSPACE(ADDRSPACE)) 
@@ -38,7 +38,7 @@ module testbench();
         instruction_next (clock);
 
     // program driving the test simulation data
-    //  driver(datainf, instructioninf);
+    tracedriver(datainf, data_next, instructioninf, instruction_next);
 
     // checker modules
     //bind data_cache        cachechecker chkdata(); 
