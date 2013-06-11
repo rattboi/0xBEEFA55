@@ -20,15 +20,17 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   parameter WAYS = 2;
   parameter LINEITEMS = 64;
 
-  localparam SETBITS  = $clog2(SETS);
-  localparam WAYBITS  = $clog2(WAYS);
-  localparam LINEBITS = LINEITEMS * $bits(bus.WORD);
-  localparam ADDRBITS = $bits(bus.ADDRSPACE);
-  localparam WORDBITS = $clog2($bits(bus.WORD));
-  localparam TAGBITS  = ADDRBITS - SETBITS - LINEBITS - WORDBITS;
-  localparam BYTESEL  = ADDRBITS - (TAGBITS+SETBITS+LINEBITS);
+  localparam SETBITS   = $clog2(SETS);
+  localparam WAYBITS   = $clog2(WAYS);
+  localparam LINEBITS  = LINEITEMS * $bits(bus.WORD);
+  localparam ADDRBITS  = $bits(bus.ADDRSPACE);
+  localparam WORDBITS  = $clog2($bits(bus.WORD));
+  localparam TAGBITS   = ADDRBITS - SETBITS - LINEBITS - WORDBITS;
+  localparam BYTESEL   = ADDRBITS - (TAGBITS+SETBITS+LINEBITS);
+  localparam TIMERBITS = $clog2(WAYS);
 
   typedef struct packed{
+    bit [TIMERBITS-1:0] timer;
     valid_t valid;
     bool_t dirty;
     bit [WAYBITS-1:0]lru;
@@ -51,11 +53,11 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   state_t state = RESET_STATE;
   state_t next  = RESET_STATE;
 
-  // advance state on each clock
+// advance state on each clock
   always_ff @(posedge bus.clock or posedge bus.reset)
     state <= (bus.reset) ? RESET_STATE : next;
 
-  // next state logics
+// next state logics
   always_comb
     if (bus.reset)
       next = RESET_STATE;  // is this right?
@@ -84,10 +86,13 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
       endcase
 
 
+// outputs
+  // simple outputs
   assign bus.valid = (state == RW) ? 1'b1 : 1'b0;
   assign bus.evict = (state == MISS || state == EVICT_CONFLICT) ? 1'b1 : 1'b0;
   assign nextlevel.request = (state == WRITEBACK || state == GET_NEXT) ? 1'b1 : 1'b0;
 
+  // not simple outputs
   always_comb
   begin
     // nextlevel data and address
