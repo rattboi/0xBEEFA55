@@ -25,7 +25,7 @@ typedef enum { RESET,
                NOP,
                RFO } inst_t;
 
-typedef enum { RESET,
+typedef enum { RESET_STATE,
                IDLE,
                EVICT_CONFLICT,
                WRITEBACK,
@@ -34,8 +34,6 @@ typedef enum { RESET,
                MISS,
                GET_NEXT,
                RW } state_t;
-
-
 
 endpackage
 
