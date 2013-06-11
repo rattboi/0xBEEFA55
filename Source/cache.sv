@@ -52,23 +52,22 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   always_comb
     if (bus.reset)
       next = RESET;  // is this right?
-
     else
       case(current_st)
         RESET:          next = IDLE;
 
         IDLE:           next = (bus.evict) ? EVICT_CONFLICT :
-                          (bus.request) ? LOOKUP : IDLE;
+                               (bus.request) ? LOOKUP : IDLE;
 
-        EVICT_CONFLICT: next = ( ( exists(set[curr_set], curr_tag) ) &&
-                          set[curr_set].way[getway(set[curr_set], curr_tag)].dirty ) ?
-                          WRITEBACK : CLEAR_IRQ;
+        EVICT_CONFLICT: next = (exists(set[curr_set], curr_tag) &&
+                               set[curr_set].way[getway(set[curr_set], curr_tag)].dirty ) ?
+                               WRITEBACK : CLEAR_IRQ;
 
         WRITEBACK:      next = CLEAR_IRQ;
 
         CLEAR_IRQ:      next = IDLE;
 
-        LOOKUP:         next = ( ( exis
+        LOOKUP:         next = (exists(set[curr_set], curr_tag) ? HIT : MISS;
 
         MISS:           next = (bus.invalidate) ? EVICT_CONFLICT : GET_NEXT;
 
