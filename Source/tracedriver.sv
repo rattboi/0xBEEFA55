@@ -18,9 +18,9 @@ package tracetools;
          int address;
      } traceline_t;
 
-     task automatic opentrace(output integer filehandle, input string filename);
+     task automatic opentrace(ref integer filehandle, string filename);
          filehandle = $fopen(filename, "r"); 
-         assert(filehandle) else $fatal(1, "Failed to open file :%s", filename);
+         assert(filehandle) else $fatal(1, "Failed to open file :%s handle=%d", filename, filehandle);
      endtask
 
      task automatic getparsedline(
@@ -43,30 +43,32 @@ program tracedriver(
 
      import tracetools::*;
 
-     task automatic execute_tracefile(filehandle);
+     task automatic execute_tracefile(integer filehandle);
          while(!$feof(filehandle)) begin
          ; // main loop
+         $stop;
          end
      endtask
 
      string trace_file_name = "";
-     int filelist = $fopen("TRACEFILE", "r");
-     int current_trace_handle;
+     integer filelist = $fopen("TRACEFILE", "r");
+     integer current_trace_handle;
 
-     int bytesread;
+     integer bytesread;
 
      initial begin
          assert(filelist) else $fatal(1, "Failed to open file : TRACEFILE");
 
          bytesread = $fgets(trace_file_name, filelist);
+         trace_file_name = trace_file_name.substr(0, trace_file_name.len()-2);
 
          while(!$feof(filelist)) begin
               opentrace(current_trace_handle, trace_file_name );
               execute_tracefile(current_trace_handle);
               bytesread = $fgets(trace_file_name, filelist);
               $fclose(current_trace_handle);
-         $fclose(filelist);
          end
+         $fclose(filelist);
      end
 
 endprogram
