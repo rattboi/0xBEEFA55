@@ -82,13 +82,13 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
         LOOKUP:         next = (exists(set[curr_set], curr_tag)) ? RW : MISS;
 
-        MISS:           next = (nextlevel.invalidate) ? EVICT_CONFLICT : GET_NEXT;
+        MISS:           next = (nextlevel.evict || is_full(set[curr_set])) ?
+                                EVICT_CONFLICT : GET_NEXT;
 
         GET_NEXT:       next = (nextlevel.valid) ? RW : GET_NEXT;
 
         RW:             next = IDLE;
       endcase
-
 
 // outputs
   // simple outputs
@@ -99,24 +99,35 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   // not simple outputs
   always_comb
   begin
+
+    {nextlevel.d, nextlevel.addr} = 'z; //'
+    {bus.d, bus.addr} = 'z; //'
+    nextlevel.operation = NOP;
+
+
     // nextlevel data and address
     if ( state == WRITEBACK ) // criteria for writes to lower level
     begin
       nextlevel.addr = '0; //'
       nextlevel.addr[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
-      nextlevel.d    = set[nl_set].way[nl_way].d;
+      nextlevel.d = set[nl_set].way[nl_way].d;
+      nextlevel.operation = WRITE;
     end
+
     else if ( state == GET_NEXT ) // criteria for reads from lower level
     begin
       nextlevel.addr = '0; //'
       nextlevel.addr[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
+      nextlevel.operation = READ;
       set[curr_set].way[curr_way].d = nextlevel.d;
       set[curr_set].way[curr_way].dirty = FALSE;
+      set[curr_set].way[curr_way].valid = VALID;
     end
+
     else if ( state == RW ) // criteria for reads/writes from CPU
     begin
       if (bus.operation == READ)
-        bus.d = set[curr_set].way[curr_way].d; 
+        bus.d = set[curr_set].way[curr_way].d;
       else if (bus.operation == WRITE)
       begin
         set[curr_set].way[curr_way].d = bus.d;
@@ -125,10 +136,28 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
       else
         $error(1,"RW State w/ neither READ or WRITE op");
     end
-    else // otherwise, tristate both address and data
-      {nextlevel.d, nextlevel.addr} = 'z; //'
 
-    if ( state == RESET_STATE)
+    else if ( state == EVICT_CONFLICT )
+      ; // no work here
+
+    else if ( state == LOOKUP )
+      ; // no work here
+
+    else if ( state == CLEAR_IRQ)
+    begin
+      if (nextlevel.evict)
+        set[nl_set].way[get_victim(nl_set)].valid = INVALID;
+      else
+        set[curr_set].way[get_victim(curr_set)].valid = INVALID;
+    end
+
+    else if ( state == MISS )
+    begin
+
+    end
+
+
+    else if ( state == RESET_STATE)
     begin
       invalidate_all();
       counter_init();
@@ -199,5 +228,15 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
       if (set[index].way[i].counter == (WAYS-1))
         return i;
   endfunction
+
+  function automatic bool_t is_full(input set_t set);
+    foreach (set.way[i])
+      if (set.way[i].valid == INVALID)
+        return FALSE;
+
+    return TRUE;
+  endfunction
+
+
 
 endmodule
