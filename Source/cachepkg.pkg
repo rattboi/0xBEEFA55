@@ -32,12 +32,14 @@ typedef enum { RESET,
                CLEAR_IRQ,
                LOOKUP,
                EVICT,
-               GET_NL,
+               GET_NEXT,
                RW } state_t;
 
-task state_t automatic next_st(input state_t current_st);
+automatic task state_t next_st(input state_t current_st);
+  int curr_way;
 
-  if (bus.reset)    next_st = RESET;
+  if (bus.reset)
+    next_st = RESET;
 
   else
     case(current_st)
@@ -47,13 +49,19 @@ task state_t automatic next_st(input state_t current_st);
                       else if (bus.request) next_st = LOOKUP;
                       else next_st = IDLE;
 
-      EVICT_CONFLICT: if (set[curr_set].way[curr_index].dirty) ? WRITEBACK : CLEAR_IRQ;
+      EVICT_CONFLICT: if ( ( exists(set[curr_set], curr_tag) ) &&
+                        set[curr_set].way[getway(set[curr_set], curr_tag)].dirty )
+                        next_st = WRITEBACK;
+                      else
+                        next_st = CLEAR_IRQ;
 
-      WRITEBACK:
-      CLEAR_IRQ:
+      WRITEBACK:      next_st = CLEAR_IRQ;
+
+      CLEAR_IRQ:      next_st = IDLE;
+
       LOOKUP:
       EVICT:
-      GET_NL:
+      GET_NEXT:
       RW:
     endcase
 
