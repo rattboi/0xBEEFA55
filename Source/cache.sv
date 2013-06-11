@@ -92,4 +92,28 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
         set[i].way[j].valid = INVALID;
   endtask
 
+  // returns true if the tag is found in a set
+  function bool_t exists(input set_t set, input bit [TAGBITS-1:0] tag);
+    foreach(set.way[i]) 
+    begin
+      if (set.way[i].tag == tag) 
+      begin
+        if (set.way[i].valid == VALID)
+          return TRUE;
+        else 
+          return FALSE;
+      end
+    end
+    return FALSE;
+  endfunction
+
+  // returns an index indicating which way has the shit
+  function int getway(input set_t set, input bit [TAGBITS-1:0] tag);
+    foreach(set.way[i]) begin
+      if (set.way[i].tag == tag)
+        return i;
+    end
+    return -1;  //probably not necessary
+  endfunction
+
 endmodule
