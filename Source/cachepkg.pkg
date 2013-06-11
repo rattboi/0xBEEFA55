@@ -32,7 +32,7 @@ typedef enum { RESET,
                CLEAR_IRQ,
                LOOKUP,
                EVICT,
-               GET_NL,
+               GET_NEXT,
                RW } state_t;
 
 task state_t automatic next_st(input state_t current_st);
@@ -51,21 +51,33 @@ task state_t automatic next_st(input state_t current_st);
 
       WRITEBACK:
       CLEAR_IRQ:
-      LOOKUP:
-      EVICT:
-      GET_NL:
-      RW:
+      LOOKUP:         
+      EVICT:          if (bus.invalidate) next_st = EVICT_CONFLICT;
+                      else next_st = GET_NEXT;
+      GET_NEXT:       next_st = RW;
+      RW:             next_st = IDLE;
     endcase
 
 endtask
 
 // returns true if the tag is found in a set
-automatic bool_t function exists(input line_t set, input bit [TAGBITS-1:0] tag);
-
+automatic bool_t function exists(input set_t set, input bit [TAGBITS-1:0] tag);
+  foreach(set.way[i]) begin
+    if (set.way[i].tag == tag)
+      return TRUE;
+  end
+  return FALSE;
 endfunction
 
 // returns an index indicating which way has the shit
-automatic int function getline(input line_t)
+automatic int function getway(input set_t set, input bit [TAGBITS-1:0] tag);
+  foreach(set.way[i]) begin
+    if (set.way[i].tag == tag)
+      return i;
+  end
+  return -1;  //probably not necessary
+endfunction
+
 
 endpackage
 
