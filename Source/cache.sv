@@ -41,20 +41,25 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
   set_t [SETS-1:0] set;
 
-  state_t state = RESET;
-  state_t next  = RESET;
+  // assignments
+  wire curr_tag = bus.addr[(ADDRBITS-1)-:TAGBITS]; // 32 - 3(tag)-14(line)
+  wire curr_index = bus.addr[(WORDBITS+LINEBITS):WORDBITS];
+  wire curr_set   = bus.addr[(WORDBITS+LINEBITS+SETBITS-1):(WORDBITS+LINEBITS)];
+      
+  state_t state = RESET_STATE;
+  state_t next  = RESET_STATE;
 
   // advance state on each clock
-  always_ff (@ posedge bus.clock or posedge bus.reset)
-    state <= (bus.reset) ? RESET : next;
+  always_ff @(posedge bus.clock or posedge bus.reset)
+    state <= (bus.reset) ? RESET_STATE : next;
 
   // next state logics
   always_comb
     if (bus.reset)
-      next = RESET;  // is this right?
+      next = RESET_STATE;  // is this right?
     else
-      case(current_st)
-        RESET:          next = IDLE;
+      case(state)
+        RESET_STATE:          next = IDLE;
 
         IDLE:           next = (bus.evict) ? EVICT_CONFLICT :
                                (bus.request) ? LOOKUP : IDLE;
@@ -67,7 +72,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
         CLEAR_IRQ:      next = IDLE;
 
-        LOOKUP:         next = (exists(set[curr_set], curr_tag) ? HIT : MISS;
+        LOOKUP:         next = (exists(set[curr_set], curr_tag)) ? RW : MISS;
 
         MISS:           next = (bus.invalidate) ? EVICT_CONFLICT : GET_NEXT;
 
@@ -79,7 +84,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   assign curr_way = getway(set[curr_set], curr_tag);
 
   assign bus.valid = (state == RW) ? 1'b1 : 1'b0;
-  assign bus.evict = (state == MISS || state == EVICT_CONFLICT) 1'b1 : 1'b0;
+  assign bus.evict = (state == MISS || state == EVICT_CONFLICT) ? 1'b1 : 1'b0;
   assign nextlevel.request = (state == WRITEBACK || state == GET_NEXT) ? 1'b1 : 1'b0;
 
   always_comb
@@ -95,13 +100,38 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   task invalidateAll();
     // TODO: choose one of these
     // SysV way
-    foreach(set[i].way[j])
-      set[i].way[j].valid = INVALID;
+    foreach(set[i])
+      foreach(set[i].way[j])
+        set[i].way[j].valid = INVALID;
 
     // Stupid way
     for (int i = 0; i < SETS; i++)
       for (int j = 0; j < WAYS; j++)
         set[i].way[j].valid = INVALID;
   endtask
+
+  // returns true if the tag is found in a set
+  function bool_t exists(input set_t set, input bit [TAGBITS-1:0] tag);
+    foreach(set.way[i]) 
+    begin
+      if (set.way[i].tag == tag) 
+      begin
+        if (set.way[i].valid == VALID)
+          return TRUE;
+        else 
+          return FALSE;
+      end
+    end
+    return FALSE;
+  endfunction
+
+  // returns an index indicating which way has the shit
+  function int getway(input set_t set, input bit [TAGBITS-1:0] tag);
+    foreach(set.way[i]) begin
+      if (set.way[i].tag == tag)
+        return i;
+    end
+    return -1;  //probably not necessary
+  endfunction
 
 endmodule
