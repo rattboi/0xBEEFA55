@@ -26,13 +26,14 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   localparam ADDRBITS = $bits(bus.ADDRSPACE);
   localparam WORDBITS = $clog2($bits(bus.WORD));
   localparam TAGBITS  = ADDRBITS - SETBITS - LINEBITS - WORDBITS;
+  localparam BYTESEL  = ADDRBITS - (TAGBITS+SETBITS+LINEBITS);
 
   typedef struct packed{
     valid_t valid;
     bool_t dirty;
     bit [WAYBITS-1:0]lru;
     bit [TAGBITS-1:0] tag;
-    bit [WORDBITS-1:0] [LINEITEMS-1:0] data;
+    bit [WORDBITS-1:0] [LINEITEMS-1:0] d;
   } line_t;
 
   typedef struct packed {
@@ -42,10 +43,11 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   set_t [SETS-1:0] set;
 
   // assignments
-  wire curr_tag = bus.addr[(ADDRBITS-1)-:TAGBITS]; // 32 - 3(tag)-14(line)
-  wire curr_index = bus.addr[(WORDBITS+LINEBITS):WORDBITS];
-  wire curr_set   = bus.addr[(WORDBITS+LINEBITS+SETBITS-1):(WORDBITS+LINEBITS)];
-      
+  wire curr_tag   = bus.addr[(ADDRBITS-1)-:TAGBITS]; // 32 - 3(tag)-14(line)
+  wire curr_index = bus.addr[(WORDBITS+LINEBITS-1)-:LINEBITS];
+  wire curr_set   = bus.addr[(WORDBITS+LINEBITS+SETBITS-1)-:SETBITS];
+  wire curr_way = getway(set[curr_set], curr_tag);
+
   state_t state = RESET_STATE;
   state_t next  = RESET_STATE;
 
@@ -59,7 +61,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
       next = RESET_STATE;  // is this right?
     else
       case(state)
-        RESET_STATE:          next = IDLE;
+        RESET_STATE:    next = IDLE;
 
         IDLE:           next = (bus.evict) ? EVICT_CONFLICT :
                                (bus.request) ? LOOKUP : IDLE;
@@ -81,20 +83,33 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
         RW:             next = IDLE;
       endcase
 
-  assign curr_way = getway(set[curr_set], curr_tag);
 
   assign bus.valid = (state == RW) ? 1'b1 : 1'b0;
   assign bus.evict = (state == MISS || state == EVICT_CONFLICT) ? 1'b1 : 1'b0;
   assign nextlevel.request = (state == WRITEBACK || state == GET_NEXT) ? 1'b1 : 1'b0;
 
   always_comb
-    // nextlevel data
+  begin
+    // nextlevel data and address
     if ( state == WRITEBACK || state == GET_NEXT ) // criteria for writes
-      nextlevel.d = set[curr_set].way[curr_way)].d;
-    else if (state == RW) // criteria for reads
+    begin
+      nextlevel.d    = set[curr_set].way[curr_way].d;
+      nextlevel.addr = '0; //'
+      nextlevel.addr[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
+    end
+
+    else if ( state == RW ) // criteria for reads
+    begin
       set[curr_set].way[curr_way].d = nextlevel.d;
-    else
-      nextlevel.d = 'z; //'
+      nextlevel.addr = '0; //'
+      nextlevel.addr[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
+    end
+
+    else // otherwise, tristate both address and data
+      {nextlevel.d, nextlevel.addr} = 'z; //'
+
+
+  end
 
 
   task invalidateAll();
@@ -112,13 +127,13 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
   // returns true if the tag is found in a set
   function bool_t exists(input set_t set, input bit [TAGBITS-1:0] tag);
-    foreach(set.way[i]) 
+    foreach(set.way[i])
     begin
-      if (set.way[i].tag == tag) 
+      if (set.way[i].tag == tag)
       begin
         if (set.way[i].valid == VALID)
           return TRUE;
-        else 
+        else
           return FALSE;
       end
     end
