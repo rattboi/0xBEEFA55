@@ -82,14 +82,13 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
         LOOKUP:         next = (exists(set[curr_set], curr_tag)) ? RW : MISS;
 
-        MISS:           next = (nextlevel.invalidate || is_full(set[curr_set])) ?
+        MISS:           next = (nextlevel.evict || is_full(set[curr_set])) ?
                                 EVICT_CONFLICT : GET_NEXT;
 
         GET_NEXT:       next = (nextlevel.valid) ? RW : GET_NEXT;
 
         RW:             next = IDLE;
       endcase
-
 
 // outputs
   // simple outputs
@@ -114,6 +113,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
       nextlevel.d = set[nl_set].way[nl_way].d;
       nextlevel.operation = WRITE;
     end
+
     else if ( state == GET_NEXT ) // criteria for reads from lower level
     begin
       nextlevel.addr = '0; //'
@@ -138,15 +138,26 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
     end
 
     else if ( state == EVICT_CONFLICT )
-      ;// no work here
+      ; // no work here
 
     else if ( state == LOOKUP )
-      ;// no work here
+      ; // no work here
 
     else if ( state == CLEAR_IRQ)
-      set[curr_set].way[curr_way].valid = INVALID;
+    begin
+      if (nextlevel.evict)
+        set[nl_set].way[get_victim(nl_set)].valid = INVALID;
+      else
+        set[curr_set].way[get_victim(curr_set)].valid = INVALID;
+    end
 
-   else if ( state == RESET_STATE)
+    else if ( state == MISS )
+    begin
+
+    end
+
+
+    else if ( state == RESET_STATE)
     begin
       invalidate_all();
       counter_init();
@@ -225,6 +236,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
     return TRUE;
   endfunction
+
 
 
 endmodule
