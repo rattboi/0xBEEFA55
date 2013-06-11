@@ -129,6 +129,9 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
     else if ( state == RW ) // criteria for reads/writes from CPU
     begin
+
+      counter_update(curr_way, curr_set);
+
       if (bus.operation == READ)
         bus.d = set[curr_set].way[curr_way].d;
       else if (bus.operation == WRITE)
@@ -240,6 +243,12 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
     return TRUE;
   endfunction
 
+  function automatic int empty_way(input set_t set);
+    foreach ( set.way[i] )
+      if (set.way[i].valid == INVALID)
+        return i;
 
+    return -1;
+  endfunction
 
 endmodule
