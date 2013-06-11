@@ -16,8 +16,10 @@ interface cacheinterface
     input reset;
 
     inst_t operation;
-    trireg [ADDRESSWIDTH-1:0] addr;
-    trireg [DATAWIDTH-1:0] d;
+    logic [ADDRESSWIDTH-1:0] addr_in;
+    logic [DATAWIDTH-1:0] d_in;
+    logic [ADDRESSWIDTH-1:0] addr_out;
+    logic [DATAWIDTH-1:0] d_out;
 
     // control signals - 4 phase signals for variable cache latency
     logic request;
@@ -26,8 +28,10 @@ interface cacheinterface
 
     modport master(
         output operation,
-        inout  addr,
-        inout  d,
+        output addr_in,
+        output d_in,
+        input  addr_out,
+        input  d_out,
         output request,
         input  valid,
         input  evict,
@@ -36,8 +40,10 @@ interface cacheinterface
 
     modport slave (
         input  operation,
-        inout  addr,
-        inout  d,
+        input  addr_in,
+        input  d_in,
+        output addr_out,
+        output d_out,
         input  request,
         output valid,
         output evict,

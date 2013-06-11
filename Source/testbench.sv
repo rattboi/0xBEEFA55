@@ -49,8 +49,8 @@ module testbench();
     // monitor modules - counts statistics on cache hits and evictions
 
 
-    // cache data_cache(bus.slave, bus.master);
-    // cache instruction_cache(bus.slave, bus.master);
+    cache data_cache(datainf.slave, data_next.master);
+    cache instruction_cache(instructioninf.slave, instruction_next.master);
 
 
 endmodule

@@ -22,9 +22,9 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
   localparam SETBITS   = $clog2(SETS);
   localparam WAYBITS   = $clog2(WAYS);
-  localparam LINEBITS  = LINEITEMS * $bits(bus.WORD);
-  localparam ADDRBITS  = $bits(bus.ADDRSPACE);
-  localparam WORDBITS  = $clog2($bits(bus.WORD));
+  localparam LINEBITS  = LINEITEMS * bus.DATAWIDTH;
+  localparam ADDRBITS  = $bits(bus.ADDRESSWIDTH);
+  localparam WORDBITS  = $clog2(bus.DATAWIDTH);
   localparam TAGBITS   = ADDRBITS - SETBITS - LINEBITS - WORDBITS;
   localparam BYTESEL   = ADDRBITS - (TAGBITS+SETBITS+LINEBITS);
   localparam TIMERBITS = $clog2(WAYS);
@@ -44,14 +44,14 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   set_t [SETS-1:0] set;
 
   // bus assignments
-  wire curr_tag   = bus.addr[(ADDRBITS-1)-:TAGBITS]; // 32 - 3(tag)-14(line)
-  wire curr_index = bus.addr[(WORDBITS+LINEBITS-1)-:LINEBITS];
-  wire curr_set   = bus.addr[(WORDBITS+LINEBITS+SETBITS-1)-:SETBITS];
-  wire curr_way = getway(set[curr_set], curr_tag);
+  wire curr_tag   = bus.addr_in[(ADDRBITS-1)-:TAGBITS]; // 32 - 3(tag)-14(line)
+  wire curr_index = bus.addr_in[(WORDBITS+LINEBITS-1)-:LINEBITS];
+  wire curr_set   = bus.addr_in[(WORDBITS+LINEBITS+SETBITS-1)-:SETBITS];
+  wire curr_way   = getway(set[curr_set], curr_tag);
 
-  wire nl_tag   = nextlevel.addr[(ADDRBITS-1)-:TAGBITS]; // 32 - 3(tag)-14(line)
-  wire nl_index = nextlevel.addr[(WORDBITS+LINEBITS-1)-:LINEBITS];
-  wire nl_set   = nextlevel.addr[(WORDBITS+LINEBITS+SETBITS-1)-:SETBITS];
+  wire nl_tag   = nextlevel.addr_out[(ADDRBITS-1)-:TAGBITS]; // 32 - 3(tag)-14(line)
+  wire nl_index = nextlevel.addr_out[(WORDBITS+LINEBITS-1)-:LINEBITS];
+  wire nl_set   = nextlevel.addr_out[(WORDBITS+LINEBITS+SETBITS-1)-:SETBITS];
   wire nl_way   = getway(set[nl_set], nl_tag);
 
   state_t state = RESET_STATE;
@@ -100,30 +100,30 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   always_comb
   begin
 
-    {nextlevel.d, nextlevel.addr} = 'z; //'
-    {bus.d, bus.addr} = 'z; //'
+    {nextlevel.d_in, nextlevel.addr_in} = 'z; //'
+    {bus.d_out, bus.addr_out} = 'z; //'
     nextlevel.operation = NOP;
 
 
     // nextlevel data and address
     if ( state == WRITEBACK ) // criteria for writes to lower level
     begin
-      nextlevel.addr = '0; //'
-      nextlevel.addr[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
-      nextlevel.d = set[nl_set].way[nl_way].d;
+      nextlevel.addr_in = '0; //'
+      nextlevel.addr_in[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
+      nextlevel.d_in = set[nl_set].way[nl_way].d;
       nextlevel.operation = WRITE;
     end
 
     else if ( state == GET_NEXT ) // criteria for reads from lower level
     begin
-      nextlevel.addr = '0; //'
-      nextlevel.addr[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
+      nextlevel.addr_in = '0; //'
+      nextlevel.addr_in[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
       if (bus.operation == WRITE)
         nextlevel.operation = RFO;
       else
         nextlevel.operation = READ;
       set[curr_set].way[empty_way(set[curr_set])].tag = curr_tag;
-      set[curr_set].way[curr_way].d = nextlevel.d;
+      set[curr_set].way[curr_way].d = nextlevel.d_in;
       set[curr_set].way[curr_way].dirty = FALSE;
       set[curr_set].way[curr_way].valid = VALID;
     end
@@ -134,10 +134,10 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
       counter_update(curr_way, curr_set);
 
       if (bus.operation == READ)
-        bus.d = set[curr_set].way[curr_way].d;
+        bus.d_out = set[curr_set].way[curr_way].d;
       else if (bus.operation == WRITE)
       begin
-        set[curr_set].way[curr_way].d = bus.d;
+        set[curr_set].way[curr_way].d = bus.d_in;
         set[curr_set].way[curr_way].dirty = TRUE;
       end
       else
