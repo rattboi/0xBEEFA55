@@ -24,18 +24,20 @@ module testbench();
     localparam DATAWIDTH    = 32;
     localparam ADDRESSWIDTH = 32;
 
+    wire reset;
+
     // from cpu
     cacheinterface #(.DATAWIDTH(DATAWIDTH), .ADDRESSWIDTH(ADDRESSWIDTH))
-        datainf (clock);
+        datainf (clock, reset);
 
     cacheinterface #(.DATAWIDTH(DATAWIDTH), .ADDRESSWIDTH(ADDRESSWIDTH)) 
-        data_next (clock);
+        data_next (clock, reset);
 
     cacheinterface #(.DATAWIDTH(DATAWIDTH), .ADDRESSWIDTH(ADDRESSWIDTH))
-        instructioninf (clock);
+        instructioninf (clock, reset);
 
     cacheinterface #(.DATAWIDTH(DATAWIDTH), .ADDRESSWIDTH(ADDRESSWIDTH))
-        instruction_next (clock);
+        instruction_next (clock, reset);
 
     // program driving the test simulation data
     tracedriver td(datainf, data_next, instructioninf, instruction_next);
