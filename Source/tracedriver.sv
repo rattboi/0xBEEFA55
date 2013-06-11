@@ -1,5 +1,27 @@
+////////////////////////////////////////////////////////////////////////////////
+// ECE 510: SystemVerilog
+// Portland State University - Spring 2013
+// Final Project:
+//
+// File:    tracedriver.sv
+// Authors: Eric Krause, Bradon Kanyid, Tyler Tricker
+// Description: dut
+//
+////////////////////////////////////////////////////////////////////////////////
+
 package tracetools;
-     import "DPI-C" function int opendir(string path);
+
+     typedef struct {
+          integer d_ino;                  /* inode number */
+          integer d_off;                  /* offset to the next dirent */
+          byte    d_reclen[2];              /* length of this record */
+          byte    d_type;                 /* type of file; not supported
+                                         by all file system types */
+          string d_name;                 /* filename */
+           } dirent;
+
+     import "DPI-C" function int opendir(input string path);
+     import "DPI-C" function int readdir(output dirent dir, input int);
 
      typedef struct packed {
          int operation;
@@ -11,7 +33,7 @@ package tracetools;
      endtask
 
      task automatic getparsedline(
-         output traceline_t linei, 
+         output traceline_t line, 
          input filehandle 
      );
          int parsed = 0;
@@ -19,7 +41,12 @@ package tracetools;
          assert(line.operation != 9 && parsed < 2) else $warning("invalid line");
      endtask
 
+
+
      task automatic execute_tracefile(filehandle);
+         while(!$feof(filehandle)) begin
+         ; // main loop
+         end
      endtask
 
 
@@ -36,11 +63,7 @@ program tracedriver(
      import tracetools::*;
 
      initial begin
-         traceline_t currentop;
-
-         while(!$feof(file)) begin
-         ; // main loop
-         end
+         ;
 
      end
 
