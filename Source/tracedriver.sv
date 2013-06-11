@@ -44,10 +44,32 @@ program tracedriver(
 
      import tracetools::*;
 
-     enum { INST_FETCH = 2,
+     enum { READ       = 0,
+            WRITE      = 1,
+            INST_FETCH = 2,
             INVALIDATE = 3, 
             RESET      = 8, 
             PRINT      = 9} nub;
+
+     task automatic trans(
+         int    address, 
+         cachepkg::inst_t operation,
+         ref valid, 
+         ref int addr, 
+         ref int data);
+
+         @(posedge data.clock)
+         data.operation = operation;
+         data.addr      = address;
+
+         if(operation == WRITE)
+             data.d         = 'hDEADBEEF; 
+
+         wait(data.valid);
+         data.operation = cachepkg::IDLE;
+         data.addr      = 'z;
+         data.d         = 'z;
+     endtask
 
      task automatic execute_tracefile(integer filehandle);
          traceline_t line;
@@ -56,10 +78,35 @@ program tracedriver(
              getparsedline(line, filehandle);
 
              unique case(line.operation)
-                 INST_FETCH: $display("%d", line.operation);
-                 INVALIDATE: $display("%d", line.operation);
-                 RESET:      $display("%d", line.operation);
-                 PRINT:      $display("%d", line.operation);
+                 READ:       trans(line.address, 
+                                   cachepkg::READ, 
+                                   data.valid, 
+                                   data.addess, 
+                                   data.d); 
+
+                 WRITE:       trans(line.address, 
+                                   cachepkg::WRITE, 
+                                   data.valid, 
+                                   data.addess, 
+                                   data.d); 
+
+                 INST_FETCH:       trans(line.address, 
+                                   cachepkg::READ, 
+                                   instructon.valid, 
+                                   instruction.addess, 
+                                   instruction.d); 
+
+                 INVALIDATE:       trans(line.address, 
+                                   cachepkg::INVALIDATE, 
+                                   instructon.valid, 
+                                   instruction.addess, 
+                                   instruction.d); 
+
+
+                 INVALIDATE: invalidate(line.address, dataNL);
+
+                 RESET:      reset(instruction, data);
+                 PRINT:      display("magic print function %d", line.operation);
 
                  default: $warning("unknown operation");
              endcase
