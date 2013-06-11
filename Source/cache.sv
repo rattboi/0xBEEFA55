@@ -67,10 +67,11 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
       next = RESET_STATE;  // is this right?
     else
       case(state)
-        RESET_STATE:    next = IDLE;
+        RESET_STATE:    next = (bus.request == RESET_STATE)? RESET_STATE : IDLE;
 
-        IDLE:           next = (nextlevel.evict) ? EVICT_CONFLICT :
-                               (bus.request) ? LOOKUP : IDLE;
+        IDLE:           next = (nextlevel.evict)        ? EVICT_CONFLICT :
+                               (bus.operation == RESET) ? RESET_STATE    :
+                               (bus.request)            ? LOOKUP         : IDLE;
 
         EVICT_CONFLICT: next = (exists(set[nl_set], nl_tag) &&
                                set[nl_set].way[nl_way].dirty == TRUE ) ?
@@ -172,13 +173,14 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   end
 
   task automatic invalidate_all();
-    // TODO: choose one of these
-    // SysV way
+    // SysV way - broken
+    /*
     foreach(set[i])
       foreach(set[i].way[j])
         set[i].way[j].valid = INVALID;
+    */
 
-    // Stupid way
+    // Stupid way - works
     for (int i = 0; i < SETS; i++)
       for (int j = 0; j < WAYS; j++)
         set[i].way[j].valid = INVALID;
@@ -209,9 +211,9 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   endfunction
 
   task automatic counter_init();
-    foreach(set[i])
-      foreach(set[i].way[j])
-        set[i].way[j].counter = j;
+    for (int i = 0; i < SETS; i++)
+      for (int j = 0; j < WAYS; j++)
+        set[i].way[j].counter= j;
   endtask
 
   // given way_accessed, updates the counters at cache line given in index

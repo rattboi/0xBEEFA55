@@ -98,7 +98,7 @@ program tracedriver(
 
              unique case(line.operation)
                  READ, WRITE: begin
-                     wait(data.valid); // these should be in a fork join
+                     wait(data.valid); 
                      data.operation = cachepkg::NOP;
                      data.request   = '0;
                      data.addr_in   = 'z;
@@ -106,15 +106,15 @@ program tracedriver(
                  end
 
                  INST_FETCH: begin
-                     wait(instruction.valid); // these should be in a fork join
+                     wait(instruction.valid); 
                      instruction.operation  = cachepkg::NOP;
                      instruction.request   = '0;
                      instruction.addr_in   = 'z;
-                     instruction.d_in       = 'z;
+                     instruction.d_in      = 'z;
                  end
 
                  INVALIDATE: begin
-                     wait(data.request) // these should be in a fork join
+                     wait(data.request) 
                      instructionNL.evict  = '0;
                      instruction.addr_in  = 'z;
                      data.addr_in         = 'z;
@@ -141,6 +141,10 @@ program tracedriver(
          data.d_in    = '0;
          instruction.addr_in = '0;
          instruction.d_in    = '0;
+
+         dataNL.d_out        = 'hDEADBEEF;
+         instructionNL.d_out = 'hDEADBEEF;
+
 
          force data.reset        = '1;
          force instruction.reset = '1;

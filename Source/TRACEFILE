@@ -1,2 +1,14 @@
 ../vectors/Data_Clear.trace
-
+../vectors/Cached_Data_Reads.trace
+../vectors/Cached_Instr_Reads.trace
+../vectors/Data_Conflict.trace
+../vectors/Data_Invalidate.trace
+../vectors/Data_Invalidate_read.trace
+../vectors/Instr_Clear.trace
+../vectors/Instr_Conflict.trace
+../vectors/Instr_Invalidate.trace
+../vectors/Instr_Invalidate_read.trace
+../vectors/Interleaved_Read_Write.trace
+../vectors/Odd_Length.trace
+../vectors/Same_Set_Data.trace
+../vectors/Same_Set_Instr.trace
