@@ -118,7 +118,10 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
     begin
       nextlevel.addr = '0; //'
       nextlevel.addr[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
-      nextlevel.operation = READ;
+      if (bus.operation == WRITE)
+        nextlevel.operation = RFO;
+      else
+        nextlevel.operation = READ;
       set[curr_set].way[curr_way].d = nextlevel.d;
       set[curr_set].way[curr_way].dirty = FALSE;
       set[curr_set].way[curr_way].valid = VALID;
