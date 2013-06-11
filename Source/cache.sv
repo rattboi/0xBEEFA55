@@ -122,6 +122,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
         nextlevel.operation = RFO;
       else
         nextlevel.operation = READ;
+      set[curr_set].way[empty_way(set[curr_set])].tag = curr_tag;
       set[curr_set].way[curr_way].d = nextlevel.d;
       set[curr_set].way[curr_way].dirty = FALSE;
       set[curr_set].way[curr_way].valid = VALID;
