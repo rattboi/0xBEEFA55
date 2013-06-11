@@ -30,10 +30,9 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   localparam TIMERBITS = $clog2(WAYS);
 
   typedef struct packed{
-    bit [TIMERBITS-1:0] timer;
+    bit [TIMERBITS-1:0] counter;
     valid_t valid;
     bool_t dirty;
-    bit [WAYBITS-1:0]lru;
     bit [TAGBITS-1:0] tag;
     bit [WORDBITS-1:0] [LINEITEMS-1:0] d;
   } line_t;
@@ -117,7 +116,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   end
 
 
-  task invalidateAll();
+  task automatic invalidateAll();
     // TODO: choose one of these
     // SysV way
     foreach(set[i])
@@ -131,7 +130,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   endtask
 
   // returns true if the tag is found in a set
-  function bool_t exists(input set_t set, input bit [TAGBITS-1:0] tag);
+  function automatic bool_t exists(input set_t set, input bit [TAGBITS-1:0] tag);
     foreach(set.way[i])
     begin
       if (set.way[i].tag == tag)
@@ -146,12 +145,41 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   endfunction
 
   // returns an index indicating which way has the shit
-  function int getway(input set_t set, input bit [TAGBITS-1:0] tag);
+  function automatic int getway(input set_t set, input bit [TAGBITS-1:0] tag);
     foreach(set.way[i]) begin
       if (set.way[i].tag == tag)
         return i;
     end
     return -1;  //probably not necessary
+  endfunction
+
+
+  task automatic counter_init();
+    foreach(set[i])
+      foreach(set[i].way[j])
+        set[i].way[j].counter = j;
+  endtask
+
+// given way_accessed, updates the counters at cache line given in index
+  task automatic counter_update(input int way_accessed, input int index);
+
+    automatic int way_value = set[curr_set].way[way_accessed].counter;
+
+    for (int i = 0; i < WAYS; i++) // increase all counters
+
+      // if a counter is lower than that of the way used, and less than the max
+      //   count (saturating counter) then increase it
+       if ( set[curr_set].way[i].counter < way_value &&
+            set[curr_set].way[i].counter < (WAYS - 1) )
+        set[curr_set].way[i].counter++;
+
+       set[curr_set].way[way_accessed].counter = 0; // set way_accessed to 0 (MRU)
+  endtask
+
+  function automatic int get_victim(input int index);
+    for (int i = 0; i < WAYS; i++)
+      if (set[curr_set].way[i].counter == (WAYS-1))
+        return i;
   endfunction
 
 endmodule
