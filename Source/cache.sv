@@ -60,7 +60,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
                                (bus.request) ? LOOKUP : IDLE;
 
         EVICT_CONFLICT: next = (exists(set[curr_set], curr_tag) &&
-                               set[curr_set].way[getway(set[curr_set], curr_tag)].dirty ) ?
+                               set[curr_set].way[curr_way].dirty ) ?
                                WRITEBACK : CLEAR_IRQ;
 
         WRITEBACK:      next = CLEAR_IRQ;
@@ -76,9 +76,21 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
         RW:             next = IDLE;
       endcase
 
+  assign curr_way = getway(set[curr_set], curr_tag);
+
   assign bus.valid = (state == RW) ? 1'b1 : 1'b0;
   assign bus.evict = (state == MISS || state == EVICT_CONFLICT) 1'b1 : 1'b0;
   assign nextlevel.request = (state == WRITEBACK || state == GET_NEXT) ? 1'b1 : 1'b0;
+
+  always_comb
+    // nextlevel data
+    if ( state == WRITEBACK || state == GET_NEXT ) // criteria for writes
+      nextlevel.d = set[curr_set].way[curr_way)].d;
+    else if (state == RW) // criteria for reads
+      set[curr_set].way[curr_way].d = nextlevel.d;
+    else
+      nextlevel.d = 'z; //'
+
 
   task invalidateAll();
     // TODO: choose one of these
