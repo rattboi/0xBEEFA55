@@ -35,7 +35,6 @@ typedef enum { RESET,
                GET_NEXT,
                RW } state_t;
 
-
 // returns true if the tag is found in a set
 automatic bool_t function exists(input set_t set, input bit [TAGBITS-1:0] tag);
   foreach(set.way[i]) begin
