@@ -43,11 +43,16 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
   set_t [SETS-1:0] set;
 
-  // assignments
+  // bus assignments
   wire curr_tag   = bus.addr[(ADDRBITS-1)-:TAGBITS]; // 32 - 3(tag)-14(line)
   wire curr_index = bus.addr[(WORDBITS+LINEBITS-1)-:LINEBITS];
   wire curr_set   = bus.addr[(WORDBITS+LINEBITS+SETBITS-1)-:SETBITS];
   wire curr_way = getway(set[curr_set], curr_tag);
+
+  wire nl_tag   = nextlevel.addr[(ADDRBITS-1)-:TAGBITS]; // 32 - 3(tag)-14(line)
+  wire nl_index = nextlevel.addr[(WORDBITS+LINEBITS-1)-:LINEBITS];
+  wire nl_set   = nextlevel.addr[(WORDBITS+LINEBITS+SETBITS-1)-:SETBITS];
+  wire nl_way   = getway(set[nl_set], nl_tag);
 
   state_t state = RESET_STATE;
   state_t next  = RESET_STATE;
@@ -64,11 +69,11 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
       case(state)
         RESET_STATE:    next = IDLE;
 
-        IDLE:           next = (bus.evict) ? EVICT_CONFLICT :
+        IDLE:           next = (nextlevel.evict) ? EVICT_CONFLICT :
                                (bus.request) ? LOOKUP : IDLE;
 
-        EVICT_CONFLICT: next = (exists(set[curr_set], curr_tag) &&
-                               set[curr_set].way[curr_way].dirty ) ?
+        EVICT_CONFLICT: next = (exists(set[nl_set], nl_tag) &&
+                               set[nl_set].way[nl_way].dirty == TRUE ) ?
                                WRITEBACK : CLEAR_IRQ;
 
         WRITEBACK:      next = CLEAR_IRQ;
@@ -77,9 +82,9 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
         LOOKUP:         next = (exists(set[curr_set], curr_tag)) ? RW : MISS;
 
-        MISS:           next = (bus.invalidate) ? EVICT_CONFLICT : GET_NEXT;
+        MISS:           next = (nextlevel.invalidate) ? EVICT_CONFLICT : GET_NEXT;
 
-        GET_NEXT:       next = RW;
+        GET_NEXT:       next = (nextlevel.valid) ? RW : GET_NEXT;
 
         RW:             next = IDLE;
       endcase
@@ -87,36 +92,50 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
 // outputs
   // simple outputs
-  assign bus.valid = (state == RW) ? 1'b1 : 1'b0;
-  assign bus.evict = (state == MISS || state == EVICT_CONFLICT) ? 1'b1 : 1'b0;
+  assign bus.valid = (state == RW) ? VALID : INVALID;
+  assign bus.evict = nextlevel.evict; //(state == MISS || state == EVICT_CONFLICT) ? 1'b1 : 1'b0;
   assign nextlevel.request = (state == WRITEBACK || state == GET_NEXT) ? 1'b1 : 1'b0;
 
   // not simple outputs
   always_comb
   begin
     // nextlevel data and address
-    if ( state == WRITEBACK || state == GET_NEXT ) // criteria for writes
+    if ( state == WRITEBACK ) // criteria for writes to lower level
     begin
-      nextlevel.d    = set[curr_set].way[curr_way].d;
       nextlevel.addr = '0; //'
       nextlevel.addr[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
+      nextlevel.d    = set[nl_set].way[nl_way].d;
     end
-
-    else if ( state == RW ) // criteria for reads
+    else if ( state == GET_NEXT ) // criteria for reads from lower level
     begin
+      nextlevel.addr = '0; //'
+      nextlevel.addr[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
       set[curr_set].way[curr_way].d = nextlevel.d;
-      nextlevel.addr = '0; //'
-      nextlevel.addr[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
+      set[curr_set].way[curr_way].dirty = FALSE;
     end
-
+    else if ( state == RW ) // criteria for reads/writes from CPU
+    begin
+      if (bus.operation == READ)
+        bus.d = set[curr_set].way[curr_way].d; 
+      else if (bus.operation == WRITE)
+      begin
+        set[curr_set].way[curr_way].d = bus.d;
+        set[curr_set].way[curr_way].dirty = TRUE;
+      end
+      else
+        $error(1,"RW State w/ neither READ or WRITE op");
+    end
     else // otherwise, tristate both address and data
       {nextlevel.d, nextlevel.addr} = 'z; //'
 
-
+    if ( state == RESET_STATE)
+    begin
+      invalidate_all();
+      counter_init();
+    end
   end
 
-
-  task automatic invalidateAll();
+  task automatic invalidate_all();
     // TODO: choose one of these
     // SysV way
     foreach(set[i])
@@ -153,32 +172,31 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
     return -1;  //probably not necessary
   endfunction
 
-
   task automatic counter_init();
     foreach(set[i])
       foreach(set[i].way[j])
         set[i].way[j].counter = j;
   endtask
 
-// given way_accessed, updates the counters at cache line given in index
+  // given way_accessed, updates the counters at cache line given in index
   task automatic counter_update(input int way_accessed, input int index);
 
-    automatic int way_value = set[curr_set].way[way_accessed].counter;
+    automatic int way_value = set[index].way[way_accessed].counter;
 
     for (int i = 0; i < WAYS; i++) // increase all counters
 
       // if a counter is lower than that of the way used, and less than the max
       //   count (saturating counter) then increase it
-       if ( set[curr_set].way[i].counter < way_value &&
-            set[curr_set].way[i].counter < (WAYS - 1) )
-        set[curr_set].way[i].counter++;
+       if ( set[index].way[i].counter < way_value &&
+            set[index].way[i].counter < (WAYS - 1) )
+          set[index].way[i].counter++;
 
-       set[curr_set].way[way_accessed].counter = 0; // set way_accessed to 0 (MRU)
+       set[index].way[way_accessed].counter = 0; // set way_accessed to 0 (MRU)
   endtask
 
   function automatic int get_victim(input int index);
     for (int i = 0; i < WAYS; i++)
-      if (set[curr_set].way[i].counter == (WAYS-1))
+      if (set[index].way[i].counter == (WAYS-1))
         return i;
   endfunction
 
