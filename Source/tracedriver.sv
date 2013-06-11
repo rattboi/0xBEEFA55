@@ -34,8 +34,6 @@ package tracetools;
 
 endpackage
 
-
-
 program tracedriver(
      cacheinterface.master data, 
      cacheinterface.slave  dataNL,         // Next Level

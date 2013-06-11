@@ -7,17 +7,19 @@
 interface cacheinterface
    #( parameter DATAWIDTH = 8,
        parameter ADDRESSWIDTH= 32)
-    (input clock
-     input reset );
+    (clock,
+     reset );
 
     import cachepkg::*;
 
     inst_t operation;
     wire[ADDRESSWIDTH-1:0] addr;
     wire[DATAWIDTH-1:0] d;
-    wire reset;
 
-    // timing signals - 4 phase signals for variable cache latency
+    input clock;
+    input reset;
+
+    // control signals - 4 phase signals for variable cache latency
     logic request;
     logic valid;
     logic evict;
