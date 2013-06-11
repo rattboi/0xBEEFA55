@@ -11,17 +11,7 @@
 
 package tracetools;
 
-     typedef struct {
-          integer d_ino;                  /* inode number */
-          integer d_off;                  /* offset to the next dirent */
-          byte    d_reclen[2];              /* length of this record */
-          byte    d_type;                 /* type of file; not supported
-                                         by all file system types */
-          string d_name;                 /* filename */
-           } dirent;
-
-     import "DPI-C" function int opendir(input string path);
-     import "DPI-C" function int readdir(output dirent dir, input int);
+     import "DPI-C" function string getenv(input string name);
 
      typedef struct packed {
          int operation;
@@ -29,7 +19,7 @@ package tracetools;
      } traceline_t;
 
      task automatic opentrace(output integer filehandle, input string filename);
-         filehandle = $fopenr(filename); 
+         filehandle = $fopen(filename, "r"); 
      endtask
 
      task automatic getparsedline(
@@ -39,14 +29,6 @@ package tracetools;
          int parsed = 0;
          parsed = $fscanf(filehandle, "%d %d", line.operation, line.address); 
          assert(line.operation != 9 && parsed < 2) else $warning("invalid line");
-     endtask
-
-
-
-     task automatic execute_tracefile(filehandle);
-         while(!$feof(filehandle)) begin
-         ; // main loop
-         end
      endtask
 
 
@@ -62,11 +44,25 @@ program tracedriver(
 
      import tracetools::*;
 
+     task automatic execute_tracefile(filehandle);
+         while(!$feof(filehandle)) begin
+         ; // main loop
+         end
+     endtask
+
+     string trace_file_name = "";
+     int filelist = $fopen("TRACEFILE", "r");
+     int current_trace_handle;
+
+     int dont_care;
+
      initial begin
-         ;
-
+         while(!$feof(filelist)) 
+              dont_care = $fgets(trace_file_name, filelist);
+              opentrace(current_trace_handle, trace_file_name );
+              execute_tracefile(current_trace_handle);
+         $fclose(filelist);
      end
-
 
 endprogram
 
