@@ -20,7 +20,7 @@ package tracetools;
 
      task automatic opentrace(output integer filehandle, input string filename);
          filehandle = $fopen(filename, "r"); 
-         assert(filehandle) else $fatal("Failed to open file :%s", filename);
+         assert(filehandle) else $fatal(1, "Failed to open file :%s", filename);
      endtask
 
      task automatic getparsedline(
@@ -56,7 +56,7 @@ program tracedriver(
      int bytesread;
 
      initial begin
-         assert(filelist) else $fatal("Failed to open file : TRACEFILE");
+         assert(filelist) else $fatal(1, "Failed to open file : TRACEFILE");
 
          bytesread = $fgets(trace_file_name, filelist);
 
