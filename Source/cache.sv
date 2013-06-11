@@ -69,7 +69,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
         CLEAR_IRQ:      next_st = IDLE;
 
         LOOKUP:
-        EVICT:
+        MISS:
         GET_NEXT:
         RW:
       endcase
@@ -83,7 +83,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
       WRITEBACK:
       CLEAR_IRQ:
       LOOKUP:
-      EVICT:
+      MISS:
       GET_NEXT:
       RW:
     endcase
