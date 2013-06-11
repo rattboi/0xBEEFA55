@@ -77,19 +77,9 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
         RW:             next = IDLE;
       endcase
 
-  // outputs
-  always_comb
-    case(state)
-      RESET:
-      IDLE:
-      EVICT_CONFLICT:
-      WRITEBACK:
-      CLEAR_IRQ:
-      LOOKUP:
-      MISS:
-      GET_NEXT:
-      RW:
-    endcase
+  assign bus.valid = (state == RW) ? 1'b1 : 1'b0;
+  assign bus.evict = (state == MISS || state == EVICT_CONFLICT) 1'b1 : 1'b0;
+  assign nextlevel.request = (state == WRITEBACK || state == GET_NEXT) ? 1'b1 : 1'b0;
 
   task invalidateAll();
     // TODO: choose one of these

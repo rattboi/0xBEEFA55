@@ -5,9 +5,10 @@
 `include "cachepkg.pkg"
 
 interface cacheinterface
-   #( parameter DATAWIDTH = 8, 
+   #( parameter DATAWIDTH = 8,
        parameter ADDRESSWIDTH= 32)
-    (input clock);
+    (input clock
+     input reset );
 
     import cachepkg::*;
 
