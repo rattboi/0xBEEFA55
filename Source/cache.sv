@@ -51,11 +51,11 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   state_t state = RESET_STATE;
   state_t next  = RESET_STATE;
 
-  // advance state on each clock
+// advance state on each clock
   always_ff @(posedge bus.clock or posedge bus.reset)
     state <= (bus.reset) ? RESET_STATE : next;
 
-  // next state logics
+// next state logics
   always_comb
     if (bus.reset)
       next = RESET_STATE;  // is this right?
@@ -84,10 +84,13 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
       endcase
 
 
+// outputs
+  // simple outputs
   assign bus.valid = (state == RW) ? 1'b1 : 1'b0;
   assign bus.evict = (state == MISS || state == EVICT_CONFLICT) ? 1'b1 : 1'b0;
   assign nextlevel.request = (state == WRITEBACK || state == GET_NEXT) ? 1'b1 : 1'b0;
 
+  // not simple outputs
   always_comb
   begin
     // nextlevel data and address
