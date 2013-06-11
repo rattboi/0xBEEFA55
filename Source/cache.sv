@@ -51,28 +51,30 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   // next state logics
   always_comb
     if (bus.reset)
-    next_st = RESET;  // is this right?
+      next = RESET;  // is this right?
 
     else
       case(current_st)
-        RESET:          next_st = IDLE;
+        RESET:          next = IDLE;
 
-        IDLE:           next_st = (bus.evict) ? EVICT_CONFLICT :
+        IDLE:           next = (bus.evict) ? EVICT_CONFLICT :
                           (bus.request) ? LOOKUP : IDLE;
 
-        EVICT_CONFLICT: next_st = ( ( exists(set[curr_set], curr_tag) ) &&
+        EVICT_CONFLICT: next = ( ( exists(set[curr_set], curr_tag) ) &&
                           set[curr_set].way[getway(set[curr_set], curr_tag)].dirty ) ?
                           WRITEBACK : CLEAR_IRQ;
 
-        WRITEBACK:      next_st = CLEAR_IRQ;
+        WRITEBACK:      next = CLEAR_IRQ;
 
-        CLEAR_IRQ:      next_st = IDLE;
+        CLEAR_IRQ:      next = IDLE;
 
-        LOOKUP:
-        MISS:           if (bus.invalidate) next_st = EVICT_CONFLICT;
-                        else next_st = GET_NEXT;
-        GET_NEXT:       next_st = RW;
-        RW:             next_st = IDLE;
+        LOOKUP:         next = ( ( exis
+
+        MISS:           next = (bus.invalidate) ? EVICT_CONFLICT : GET_NEXT;
+
+        GET_NEXT:       next = RW;
+
+        RW:             next = IDLE;
       endcase
 
   // outputs
@@ -90,6 +92,12 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
     endcase
 
   task invalidateAll();
+    // TODO: choose one of these
+    // SysV way
+    foreach(set[i].way[j])
+      set[i].way[j].valid = INVALID;
+
+    // Stupid way
     for (int i = 0; i < SETS; i++)
       for (int j = 0; j < WAYS; j++)
         set[i].way[j].valid = INVALID;
