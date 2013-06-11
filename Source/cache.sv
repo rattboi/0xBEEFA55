@@ -126,6 +126,9 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
     else if ( state == RW ) // criteria for reads/writes from CPU
     begin
+
+      counter_update(curr_way, curr_set);
+
       if (bus.operation == READ)
         bus.d = set[curr_set].way[curr_way].d;
       else if (bus.operation == WRITE)
