@@ -16,27 +16,29 @@ interface cacheinterface
     wire[DATAWIDTH-1:0] data;
 
     // timing signals - 4 phase signals for variable cache latency
-    logic request; 
+    logic request;
     logic valid;
     logic evict;
 
     modport master(
-        output operation, 
-        inout  addr, 
-        inout  data, 
+        output operation,
+        inout  addr,
+        inout  data,
         output request,
         input  valid,
         input  evict,
-        input  clock);
+        input  clock
+        input  reset);
 
     modport slave (
-        input  operation, 
-        inout  addr, 
+        input  operation,
+        inout  addr,
         inout  data,
         input  request,
         output valid,
         output evict,
-        input  clock);
+        input  clock,
+        input  reset);
 
 endinterface
 

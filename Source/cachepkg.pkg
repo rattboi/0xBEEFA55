@@ -25,6 +25,48 @@ typedef enum { RESET,
                NOP,
                RFO } inst_t;
 
+typedef enum { RESET,
+               IDLE,
+               EVICT_CONFLICT,
+               WRITEBACK,
+               CLEAR_IRQ,
+               LOOKUP,
+               EVICT,
+               GET_NL,
+               RW } state_t;
+
+task state_t automatic next_st(input state_t current_st);
+
+  if (bus.reset)    next_st = RESET;
+
+  else
+    case(current_st)
+      RESET:          next_st = IDLE;
+
+      IDLE:           if (bus.evict)  next_st = EVICT_CONFLICT;
+                      else if (bus.request) next_st = LOOKUP;
+                      else next_st = IDLE;
+
+      EVICT_CONFLICT: if (set[curr_set].way[curr_index].dirty) ? WRITEBACK : CLEAR_IRQ;
+
+      WRITEBACK:
+      CLEAR_IRQ:
+      LOOKUP:
+      EVICT:
+      GET_NL:
+      RW:
+    endcase
+
+endtask
+
+// returns true if the tag is found in a set
+automatic bool_t function exists(input line_t set, input bit [TAGBITS-1:0] tag);
+
+endfunction
+
+// returns an index indicating which way has the shit
+automatic int function getline(input line_t)
+
 endpackage
 
 `endif

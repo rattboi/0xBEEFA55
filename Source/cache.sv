@@ -12,7 +12,7 @@
 `include "cachepkg.pkg"
 
 //             from lower level cache    to higher level cache
-module cache( cacheinterface.slave bus , cacheinterface.master nextbus);
+module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
 
   import cachepkg::*;
 
@@ -29,6 +29,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextbus);
 
   typedef struct packed{
     valid_t valid;
+    bool_t dirty;
     bit [WAYBITS-1:0]lru;
     bit [TAGBITS-1:0] tag;
     bit [WORDBITS-1:0] [LINEITEMS-1:0] data;
@@ -40,12 +41,20 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextbus);
 
   set_t [SETS-1:0] set;
 
+  state_t state = RESET;
+  state_t next  = RESET;
+
+  always_ff (@ posedge bus.clock or posedge bus.reset)
+    state <= (bus.reset) ? RESET : next;
+
+
   // internal
   bool_t done = FALSE;
 
   // assignments
-  alias curr_tag   = bus.addr[(ADDRBITS-1)-:TAGBITS]; // 32 - 3(tag)-14(line)
-  alias curr_index = bus.addr[(WORDBITS+LINEBITS):WORDBITS];
+  alias curr_tag   = bus.addr[(ADDRBITS-1)-:TAGBITS];
+  alias curr_index = bus.addr[(WORDBITS+LINEBITS-1):WORDBITS];
+  alias curr_set   = bus.addr[(WORDBITS+LINEBITS+SETBITS-1):(WORDBITS+LINEBITS)];
 
   always @(posedge bus.clock)
   begin
