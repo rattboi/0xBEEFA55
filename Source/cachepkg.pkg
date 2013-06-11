@@ -25,7 +25,7 @@ typedef enum { RESET,
                NOP,
                RFO } inst_t;
 
-typedef enum { RESET,
+typedef enum { RESET_STATE,
                IDLE,
                EVICT_CONFLICT,
                WRITEBACK,
@@ -35,8 +35,8 @@ typedef enum { RESET,
                GET_NEXT,
                RW } state_t;
 
-// returns true if the tag is found in a set
-automatic bool_t function exists(input set_t set, input bit [TAGBITS-1:0] tag);
+/* returns true if the tag is found in a set
+function automatic  bool_t exists(input set_t set, input bit [TAGBITS-1:0] tag);
   foreach(set.way[i]) 
   begin
     if (set.way[i].tag == tag) 
@@ -58,7 +58,7 @@ automatic int function getway(input set_t set, input bit [TAGBITS-1:0] tag);
   end
   return -1;  //probably not necessary
 endfunction
-
+*/
 
 endpackage
 
