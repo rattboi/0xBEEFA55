@@ -44,9 +44,6 @@ program tracedriver(
 
      import tracetools::*;
 
-     logic [31:0] addr;
-     logic [31:0] datalines;
-
      enum { READ       = 0,
             WRITE      = 1,
             INST_FETCH = 2,
@@ -65,54 +62,62 @@ program tracedriver(
              unique case(line.operation)
                  READ: begin
                      data.operation = cachepkg::READ;
-                     force data.addr      = line.address;
+                     data.addr_in   = line.address;
                      data.request   = '1;
                  end
 
                  WRITE: begin
                      data.operation = cachepkg::WRITE;
-                     force data.addr      = line.address;
+                     data.addr_in   = line.address;
                      data.request   = '1;
-                     force data.d         = 'hDEADBEEF;
+                     data.d_in      = 'hDEADBEEF;
                  end
                  
                  INST_FETCH: begin
-                     data.operation = cachepkg::WRITE;
-                     force data.addr      = line.address;
-                     data.request   = '1;
+                     instruction.operation = cachepkg::READ;
+                     instruction.addr_in   = line.address;
+                     instruction.request   = '1;
                  end
 
                  INVALIDATE: begin
                      dataNL.evict            = '1;
-                     force dataNL.addr             = line.address;
+                     dataNL.addr_out         = line.address;
                      instructionNL.evict     = '1;
-                     force instructionNL.addr      = line.address;
+                     instructionNL.addr_out  = line.address;
                  end
 
                  RESET: begin
                      data.operation         = cachepkg::RESET;
                      data.request           = '1;
-                     force instruction.operation  = cachepkg::RESET;
-                     force instruction.request    = '1;
+                     instruction.operation  = cachepkg::RESET;
+                     instruction.request    = '1;
                  end
 
                  PRINT:      $display("magic print function %d", line.operation);
              endcase
 
              unique case(line.operation)
-                 READ, WRITE, INST_FETCH: begin
-//                     wait(data.valid); // these should be in a fork join
+                 READ, WRITE: begin
+                     wait(data.valid); // these should be in a fork join
                      data.operation = cachepkg::NOP;
                      data.request   = '0;
-                     release data.addr;
-                     release data.d;
+                     data.addr_in   = 'z;
+                     data.d_in      = 'z;
+                 end
+
+                 INST_FETCH: begin
+                     wait(instruction.valid); // these should be in a fork join
+                     instruction.operation  = cachepkg::NOP;
+                     instruction.request   = '0;
+                     instruction.addr_in   = 'z;
+                     instruction.d_in       = 'z;
                  end
 
                  INVALIDATE: begin
-//                     wait(data.request) // these should be in a fork join
-                     instruction.evict = '0;
-                     release instruction.addr;
-                     release data.addr;
+                     wait(data.request) // these should be in a fork join
+                     instructionNL.evict  = '0;
+                     instruction.addr_in  = 'z;
+                     data.addr_in         = 'z;
                  end
                  default: ;
              endcase
@@ -132,7 +137,22 @@ program tracedriver(
          bytesread = $fgets(trace_file_name, filelist);
          trace_file_name = trace_file_name.substr(0, trace_file_name.len()-2);
 
-         while(!$feof(filelist)) begin
+         data.addr_in = '0;
+         data.d_in    = '0;
+         instruction.addr_in = '0;
+         instruction.d_in    = '0;
+
+         force data.reset        = '1;
+         force instruction.reset = '1;
+         @(posedge data.clock)
+         force data.reset        = '0;
+         force instruction.reset = '0;
+         @(posedge data.clock)
+
+         dataNL.evict        = '0;
+         instructionNL.evict = '0;
+
+       while(!$feof(filelist)) begin
               opentrace(current_trace_handle, trace_file_name );
               execute_tracefile(current_trace_handle);
               $fclose(current_trace_handle);

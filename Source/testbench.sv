@@ -24,7 +24,7 @@ module testbench();
     localparam DATAWIDTH    = 32;
     localparam ADDRESSWIDTH = 32;
 
-    wire reset;
+    logic reset;
 
     // from cpu
     cacheinterface #(.DATAWIDTH(DATAWIDTH), .ADDRESSWIDTH(ADDRESSWIDTH))

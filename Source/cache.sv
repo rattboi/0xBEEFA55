@@ -117,7 +117,7 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
     else if ( state == GET_NEXT ) // criteria for reads from lower level
     begin
       nextlevel.addr_in = '0; //'
-      nextlevel.addr_in[ADDRBITS-1:BYTESEL] = {curr_tag, curr_set, curr_index};
+      nextlevel.addr_in[ADDRBITS-1:BYTESEL] = bus.addr_in[ADDRBITS-1:BYTESEL]; 
       if (bus.operation == WRITE)
         nextlevel.operation = RFO;
       else
