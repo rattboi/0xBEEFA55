@@ -44,6 +44,11 @@ program tracedriver(
 
      import tracetools::*;
 
+     enum { INST_FETCH = 2,
+            INVALIDATE = 3, 
+            RESET      = 8, 
+            PRINT      = 9} nub;
+
      task automatic execute_tracefile(integer filehandle);
          traceline_t line;
 
@@ -51,16 +56,11 @@ program tracedriver(
              getparsedline(line, filehandle);
 
              unique case(line.operation)
-                 0: $display("%d", line.operation);
-                 1: $display("%d", line.operation);
-                 2: $display("%d", line.operation);
-                 3: $display("%d", line.operation);
-                 4: $display("%d", line.operation);
-                 5: $display("%d", line.operation);
-                 6: $display("%d", line.operation);
-                 7: $display("%d", line.operation);
-                 8: $display("%d", line.operation);
-                 9: $display("%d", line.operation);
+                 INST_FETCH: $display("%d", line.operation);
+                 INVALIDATE: $display("%d", line.operation);
+                 RESET:      $display("%d", line.operation);
+                 PRINT:      $display("%d", line.operation);
+
                  default: $warning("unknown operation");
              endcase
         end
