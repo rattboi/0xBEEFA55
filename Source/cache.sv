@@ -20,15 +20,17 @@ module cache( cacheinterface.slave bus , cacheinterface.master nextlevel);
   parameter WAYS = 2;
   parameter LINEITEMS = 64;
 
-  localparam SETBITS  = $clog2(SETS);
-  localparam WAYBITS  = $clog2(WAYS);
-  localparam LINEBITS = LINEITEMS * $bits(bus.WORD);
-  localparam ADDRBITS = $bits(bus.ADDRSPACE);
-  localparam WORDBITS = $clog2($bits(bus.WORD));
-  localparam TAGBITS  = ADDRBITS - SETBITS - LINEBITS - WORDBITS;
-  localparam BYTESEL  = ADDRBITS - (TAGBITS+SETBITS+LINEBITS);
+  localparam SETBITS   = $clog2(SETS);
+  localparam WAYBITS   = $clog2(WAYS);
+  localparam LINEBITS  = LINEITEMS * $bits(bus.WORD);
+  localparam ADDRBITS  = $bits(bus.ADDRSPACE);
+  localparam WORDBITS  = $clog2($bits(bus.WORD));
+  localparam TAGBITS   = ADDRBITS - SETBITS - LINEBITS - WORDBITS;
+  localparam BYTESEL   = ADDRBITS - (TAGBITS+SETBITS+LINEBITS);
+  localparam TIMERBITS = $clog2(WAYS);
 
   typedef struct packed{
+    bit [TIMERBITS-1:0] timer;
     valid_t valid;
     bool_t dirty;
     bit [WAYBITS-1:0]lru;
