@@ -7,16 +7,19 @@
 interface cacheinterface
    #( parameter DATAWIDTH = 8,
        parameter ADDRESSWIDTH= 32)
-    (input clock
-     input reset );
+    (clock,
+     reset );
 
     import cachepkg::*;
 
     inst_t operation;
     wire[ADDRESSWIDTH-1:0] addr;
-    wire[DATAWIDTH-1:0] data;
+    wire[DATAWIDTH-1:0] d;
 
-    // timing signals - 4 phase signals for variable cache latency
+    input clock;
+    input reset;
+
+    // control signals - 4 phase signals for variable cache latency
     logic request;
     logic valid;
     logic evict;
@@ -24,17 +27,17 @@ interface cacheinterface
     modport master(
         output operation,
         inout  addr,
-        inout  data,
+        inout  d,
         output request,
         input  valid,
         input  evict,
-        input  clock
+        input  clock,
         input  reset);
 
     modport slave (
         input  operation,
         inout  addr,
-        inout  data,
+        inout  d,
         input  request,
         output valid,
         output evict,

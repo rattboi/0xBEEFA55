@@ -3,7 +3,7 @@
 // Portland State University - Spring 2013
 // Final Project:
 //
-// File:    top.sv
+// File:    testbench.sv
 // Authors: Eric Krause, Bradon Kanyid, Tyler Tricker
 // Description: dut
 //
