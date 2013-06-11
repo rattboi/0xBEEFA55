@@ -12,12 +12,12 @@ interface cacheinterface
 
     import cachepkg::*;
 
-    inst_t operation;
-    tri [ADDRESSWIDTH-1:0] addr;
-    tri [DATAWIDTH-1:0] d;
-
     input clock;
     input reset;
+
+    inst_t operation;
+    trireg [ADDRESSWIDTH-1:0] addr;
+    trireg [DATAWIDTH-1:0] d;
 
     // control signals - 4 phase signals for variable cache latency
     logic request;

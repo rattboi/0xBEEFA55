@@ -44,18 +44,8 @@ program tracedriver(
 
      import tracetools::*;
 
-     cachepkg::inst_t dataop;
      logic [31:0] addr;
      logic [31:0] datalines;
-
-     assign data.operation = dataop;
-     assign data.addr      = addr;
-     assign instruction.operation = dataop;
-     assign instruction.addr = addr;
-
-     assign instruction.d  = datalines;
-     assign data.d         = datalines;
-     
 
      enum { READ       = 0,
             WRITE      = 1,
@@ -64,45 +54,46 @@ program tracedriver(
             RESET      = 8, 
             PRINT      = 9} nub;
 
-     task automatic execute_tracefile(integer filehandle);
+     task execute_tracefile(integer filehandle);
          traceline_t line;
 
          while(!$feof(filehandle)) begin
              getparsedline(line, filehandle);
+             $display("operation %d", line.operation);
 
              @(posedge data.clock)
              unique case(line.operation)
                  READ: begin
                      data.operation = cachepkg::READ;
-                     data.addr      = line.address;
+                     force data.addr      = line.address;
                      data.request   = '1;
                  end
 
                  WRITE: begin
                      data.operation = cachepkg::WRITE;
-                     data.addr      = line.address;
+                     force data.addr      = line.address;
                      data.request   = '1;
-                     data.d         = 'hDEADBEEF;
+                     force data.d         = 'hDEADBEEF;
                  end
                  
                  INST_FETCH: begin
                      data.operation = cachepkg::WRITE;
-                     data.addr      = line.address;
+                     force data.addr      = line.address;
                      data.request   = '1;
                  end
 
                  INVALIDATE: begin
                      dataNL.evict            = '1;
-                     dataNL.addr             = line.address;
+                     force dataNL.addr             = line.address;
                      instructionNL.evict     = '1;
-                     instructionNL.addr      = line.address;
+                     force instructionNL.addr      = line.address;
                  end
 
                  RESET: begin
                      data.operation         = cachepkg::RESET;
                      data.request           = '1;
-                     instruction.operation  = cachepkg::RESET;
-                     instruction.request    = '1;
+                     force instruction.operation  = cachepkg::RESET;
+                     force instruction.request    = '1;
                  end
 
                  PRINT:      $display("magic print function %d", line.operation);
@@ -110,15 +101,20 @@ program tracedriver(
 
              unique case(line.operation)
                  READ, WRITE, INST_FETCH: begin
-                     wait(data.valid);
+//                     wait(data.valid); // these should be in a fork join
                      data.operation = cachepkg::NOP;
                      data.request   = '0;
-                     data.addr      = 'z;
-                     data.d         = 'z;
+                     release data.addr;
+                     release data.d;
                  end
 
-                 INVALIDATE:
-                     $display("display");
+                 INVALIDATE: begin
+//                     wait(data.request) // these should be in a fork join
+                     instruction.evict = '0;
+                     release instruction.addr;
+                     release data.addr;
+                 end
+                 default: ;
              endcase
          end
      endtask
@@ -130,6 +126,7 @@ program tracedriver(
      integer bytesread;
 
      initial begin
+         $display("LOADING TRACE FILES");
          assert(filelist) else $fatal(1, "Failed to open file : TRACEFILE");
 
          bytesread = $fgets(trace_file_name, filelist);
